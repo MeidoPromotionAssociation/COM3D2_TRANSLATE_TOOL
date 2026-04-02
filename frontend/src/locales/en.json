@@ -1,0 +1,386 @@
+{
+  "common": {
+    "appName": "COM3D2 Translate Tool",
+    "workflow": "COM3D2 Translation Workflow",
+    "all": "All",
+    "busy": "Busy",
+    "idle": "Idle",
+    "stop": "Stop",
+    "stopping": "Stopping...",
+    "ready": "Ready.",
+    "save": "Save",
+    "choose": "Choose",
+    "chooseFile": "Choose File",
+    "chooseFolder": "Choose Folder",
+    "noMessagesYet": "No messages yet."
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "zh": "Chinese"
+  },
+  "page": {
+    "translate": "Translation",
+    "tools": "Settings / Import / Export"
+  },
+  "topbar": {
+    "arcCount": "Arc {{count}}",
+    "entryCount": "Entries {{count}}"
+  },
+  "filters": {
+    "title": "Filters",
+    "refreshEntries": "Refresh Entries",
+    "scanNewArc": "Scan New Arc",
+    "search": "Search",
+    "arc": "Arc",
+    "sourceFile": "Source File",
+    "sourceFileHint": "Exact filename, for example example.ks. Use Search above for partial matching.",
+    "type": "Type",
+    "status": "Status",
+    "onlyUntranslated": "Only untranslated"
+  },
+  "arcTable": {
+    "title": "Arc Files",
+    "filename": "Filename",
+    "status": "Status",
+    "parsedAt": "Parsed At",
+    "action": "Action",
+    "reparseAll": "Reparse All ({{count}})",
+    "reparse": "Reparse",
+    "reparseFailed": "Reparse Failed ({{count}})"
+  },
+  "entryTable": {
+    "title": "Entries",
+    "context": "Context",
+    "original": "Original",
+    "translated": "Translated",
+    "polished": "Polished",
+    "status": "Status",
+    "action": "Action",
+    "pageInfo": "Page {{page}} / {{totalPages}}",
+    "rangeInfo": "{{from}}-{{to}} of {{total}}",
+    "previousPage": "Previous",
+    "nextPage": "Next",
+    "autoSaveHelp": "Entry edits are saved automatically after a short pause.",
+    "batchHelp": "Batch actions apply to all rows matching the current filters, not just this page.",
+    "applyFilteredStatus": "Set Filtered Status",
+    "clearFilteredTranslations": "Clear Filtered Translations",
+    "clearTranslationsConfirm": "Clear translated and polished text for {{total}} filtered entries?"
+  },
+  "settings": {
+    "title": "Settings",
+    "save": "Save Settings",
+    "autoSaveHelp": "Changes are saved automatically after a short pause.",
+    "arcScanDirectory": "Arc Scan Directory",
+    "workDirectory": "Work Directory",
+    "defaultImportDirectory": "Default Import Directory",
+    "defaultExportDirectory": "Default Export Directory",
+    "noArcScanDirectory": "No scan directory selected",
+    "noWorkDirectory": "No work directory selected",
+    "noDefaultImportDirectory": "No default import directory selected",
+    "noDefaultExportDirectory": "No default export directory selected",
+    "selectArcScanDirectory": "Select arc scan directory",
+    "selectWorkDirectory": "Select work directory",
+    "selectDefaultImportDirectory": "Select default import directory",
+    "selectDefaultExportDirectory": "Select default export directory"
+  },
+  "importSection": {
+    "title": "Import",
+    "run": "Run Import",
+    "importer": "Importer",
+    "sourceFile": "Source File",
+    "sourceDirectory": "Source Directory",
+    "noImportFile": "No import file selected",
+    "noImportDirectory": "No import directory selected",
+    "selectSourceDirectory": "Select import source directory",
+    "allowOverwrite": "Allow overwrite translated text"
+  },
+  "exportSection": {
+    "title": "Export",
+    "run": "Run Export",
+    "exporter": "Exporter",
+    "outputFile": "Output File",
+    "noExportFile": "No export file selected",
+    "selectOutputFile": "Select export file",
+    "skipEmptyFinal": "Skip rows without final text",
+    "help": "Exports UTF-8 text in the format original<TAB>final-text."
+  },
+  "maintenanceSection": {
+    "title": "Maintenance",
+    "run": "Clean Blank Source Rows",
+    "help": "Runs database cleanup for rows whose original text becomes empty after invisible-whitespace normalization. This is manual only and no longer runs at startup."
+  },
+  "translationSection": {
+    "title": "Batch Translation",
+    "run": "Run Translation",
+    "provider": "Translator",
+    "targetField": "Target Field",
+    "languagePair": "Language Pair",
+    "allowOverwrite": "Allow overwrite existing target field content",
+    "help": "Runs {{provider}} against the current filters. LLM providers keep KS lines from the same file together when possible and include speaker, voice_id, type, and nearby-line context.",
+    "manualHelp": "Manual translation has no automatic API. Switch to Google, Baidu, OpenAI Chat, or OpenAI Responses."
+  },
+  "sourceRecognitionSection": {
+    "title": "Source Recognition",
+    "run": "Run Recognition",
+    "provider": "Provider",
+    "targetField": "Write Target",
+    "language": "ASR Language",
+    "allowOverwrite": "Allow overwrite existing original text",
+    "help": "Finds playvoice_notext rows under the current filters, matches voice_id to an audio filename inside the source arc, sends the extracted file to the ASR endpoint, and writes the recognized text back into source_text."
+  },
+  "importers": {
+    "arc-ks-folder-text": {
+      "label": "Arc Folder / KS Text",
+      "help": "Imports a folder shaped like arc-folder-name\\ks-file-name.txt, where each line is original<TAB>translation."
+    },
+    "arc-source-text-file": {
+      "label": "Arc Source Text",
+      "help": "Imports a folder containing .txt files named after arcs, such as script.txt or script.arc.txt. Each line can be original or original<TAB>translation."
+    },
+    "entry-jsonl": {
+      "label": "Entry Snapshot JSONL",
+      "help": "Imports a JSONL snapshot previously exported by this tool. It preserves source identity fields, translated text, polished text, status, and timestamps."
+    },
+    "ks-extract-csv": {
+      "label": "ks_extract CSV",
+      "help": "Imports a ks_extract CSV using source arc, source file, and source text. Type, voice_id, and role are used only when those cells are present."
+    },
+    "translated-csv": {
+      "label": "Translated CSV",
+      "help": "Imports a folder containing *_translated.csv files. Each file is mapped back to its .ks name, then existing arcs are inferred from the database."
+    }
+  },
+  "exporters": {
+    "tab-text": {
+      "label": "JAT General Text Translation Module Format",
+      "help": "Exports UTF-8 text in a format that JAT can load directly. The exporter escapes newlines, tabs, backslashes, and similar special characters using JAT-compatible rules; if a source line starts with ; or $, that row is skipped instead of being exported. Only one row is kept for each original text because the format cannot preserve source identity. When duplicates conflict, the exporter prefers polished/reviewed rows and then newer rows."
+    },
+    "entry-jsonl": {
+      "label": "Entry Snapshot JSONL",
+      "help": "Exports a line-delimited JSON snapshot of full entry records so the data can be imported back later without losing fields such as type, voiceId, role, source arc/file, translated text, polished text, status, and timestamps."
+    }
+  },
+  "translators": {
+    "manual": {
+      "label": "Manual",
+      "help": "Manual mode is for direct editing only and does not send automatic translation requests."
+    },
+    "google-translate": {
+      "label": "Google Translate",
+      "help": "Uses the Google Cloud Translation API. Requires an API key."
+    },
+    "baidu-translate": {
+      "label": "Baidu Translate",
+      "help": "Uses the Baidu general text translation API. Requires an AppID and secret."
+    },
+    "openai-chat": {
+      "label": "OpenAI Chat",
+      "help": "Uses the OpenAI Chat Completions API. Supports custom base URL, model, prompt, and extra JSON parameters."
+    },
+    "openai-responses": {
+      "label": "OpenAI Responses",
+      "help": "Uses the OpenAI Responses API. Supports custom base URL, model, prompt, and extra JSON parameters."
+    },
+    "qwen3-asr": {
+      "label": "Qwen3-ASR",
+      "help": "Uses a Qwen3-ASR compatible OpenAI-style audio transcription endpoint to backfill original text for playvoice_notext rows."
+    }
+  },
+  "translationTarget": {
+    "translated": "Translated Text",
+    "polished": "Polished Text",
+    "source_text": "Original Text"
+  },
+  "translationSettings": {
+    "title": "Translation Settings",
+    "activeProvider": "Active Translator",
+    "sourceLanguage": "Source Language",
+    "targetLanguage": "Target Language",
+    "proxy": {
+      "mode": "Proxy",
+      "system": "System Proxy",
+      "direct": "Direct",
+      "custom": "Custom Proxy",
+      "test": "Test Proxy",
+      "testing": "Testing...",
+      "url": "Proxy URL",
+      "help": "Applies to LLM, machine translation, and ASR requests. Default is system proxy. On Windows, the app first checks system Internet Settings and falls back to environment proxy variables."
+    },
+    "glossary": "LLM Glossary",
+    "glossarySource": "Source",
+    "glossaryPreferred": "Preferred",
+    "glossaryNote": "Note",
+    "importGlossary": "Import Glossary",
+    "exportGlossary": "Export Glossary",
+    "addGlossaryRow": "Add Term",
+    "removeGlossaryRow": "Remove",
+    "testTranslator": "Test Current Translator",
+    "testTranslatorRunning": "Testing Translator...",
+    "glossaryHelp": "Shared across LLM translators. Enter source text, preferred translation, and an optional note. Preferred may be empty. The frontend stores JSON, and the backend only sends entries matching the current source text, nearby lines, speaker, type, voice_id, arc, or file.",
+    "manualHelp": "No extra configuration is required for manual mode.",
+    "google": {
+      "baseUrl": "Google Base URL",
+      "apiKey": "Google API Key",
+      "format": "Format",
+      "model": "Model",
+      "batchSize": "Batch Size",
+      "timeoutSeconds": "Timeout Seconds"
+    },
+    "baidu": {
+      "baseUrl": "Baidu Base URL",
+      "appId": "Baidu AppID",
+      "secret": "Baidu Secret",
+      "timeoutSeconds": "Timeout Seconds"
+    },
+    "asr": {
+      "title": "Source Recognition (ASR)",
+      "baseUrl": "ASR Base URL",
+      "language": "Language",
+      "prompt": "Prompt",
+      "batchSize": "Batch Size",
+      "concurrency": "Concurrency",
+      "timeoutSeconds": "Timeout Seconds",
+      "test": "Test ASR",
+      "testing": "Testing ASR...",
+      "help": "Used by Source Recognition. The app extracts the matched voice file from the source arc and sends it to this OpenAI-style audio transcription endpoint. When Batch Size is greater than 1, the app will send batch requests to the /batch endpoint and fall back to single-file requests if that batch call fails."
+    },
+    "openai": {
+      "baseUrl": "OpenAI Base URL",
+      "apiKey": "API Key",
+      "model": "Model",
+      "batchSize": "Batch Size",
+      "concurrency": "Concurrency",
+      "timeoutSeconds": "Timeout Seconds",
+      "reasoningEffort": "Reasoning Effort",
+      "temperature": "Temperature",
+      "topP": "Top P",
+      "presencePenalty": "Presence Penalty",
+      "frequencyPenalty": "Frequency Penalty",
+      "maxOutputTokens": "Max Output Tokens",
+      "prompt": "Custom Prompt",
+      "extraJson": "Extra JSON Parameters",
+      "promptHelp": "Leave blank to use the built-in prompt. Custom prompts support placeholders: {{source_language}}, {{target_language}}, {{target_field}}, {{mode_instruction}}, {{context_instruction}}, {{glossary}}, and {{response_format}}.",
+      "placeholders": "Placeholder reference: {{source_language}}=source language, {{target_language}}=target language, {{target_field}}=write target, {{mode_instruction}}=task-specific instruction for translate or polish, {{context_instruction}}=context constraints, {{glossary}}=formatted glossary instructions, {{response_format}}=required JSON output contract.",
+      "extraJsonHelp": "Provide a valid JSON object to append additional official API parameters."
+    }
+  },
+  "statusPanel": {
+    "title": "Status"
+  },
+  "importProgress": {
+    "files": "Files",
+    "lines": "Lines",
+    "inserted": "Inserted",
+    "updated": "Updated",
+    "skipped": "Skipped",
+    "unmatched": "Unmatched",
+    "errors": "Errors",
+    "waitingFile": "Waiting for the next file",
+    "phase": {
+      "pending": "Pending",
+      "starting": "Starting",
+      "running": "Running",
+      "committing": "Committing",
+      "completed": "Completed",
+      "failed": "Failed"
+    }
+  },
+  "exportProgress": {
+    "rows": "Rows",
+    "exported": "Exported",
+    "skipped": "Skipped",
+    "waitingOutput": "Waiting for the output file",
+    "phase": {
+      "pending": "Pending",
+      "starting": "Starting",
+      "running": "Running",
+      "flushing": "Flushing",
+      "completed": "Completed",
+      "failed": "Failed"
+    }
+  },
+  "translateProgress": {
+    "total": "Total",
+    "processed": "Processed",
+    "updated": "Updated",
+    "skipped": "Skipped",
+    "failed": "Failed",
+    "targetField": "Target Field",
+    "waitingItem": "Waiting for the next item",
+    "phase": {
+      "pending": "Pending",
+      "starting": "Starting",
+      "running": "Running",
+      "stopped": "Stopped",
+      "completed": "Completed",
+      "failed": "Failed"
+    }
+  },
+  "dialogs": {
+    "csvFiles": "CSV Files",
+    "jsonFiles": "JSON Files",
+    "jsonlFiles": "JSONL Files",
+    "textFiles": "Text Files",
+    "selectGlossaryImportFile": "Select glossary file",
+    "selectGlossaryExportFile": "Save glossary file",
+    "selectEntryJSONL": "Select entry snapshot JSONL",
+    "selectKsExtractCsv": "Select ks_extract CSV",
+    "selectTranslatedCsv": "Select translated CSV",
+    "selectArcSourceTextFile": "Select arc source text file",
+    "selectImportSourceDirectory": "Select import source directory",
+    "selectExportFile": "Select export file"
+  },
+  "messages": {
+    "getSettingsFailed": "GetSettings failed: {{error}}",
+    "listImportersFailed": "ListImporters failed: {{error}}",
+    "listExportersFailed": "ListExporters failed: {{error}}",
+    "listTranslatorsFailed": "ListTranslators failed: {{error}}",
+    "settingsSaved": "Settings saved.",
+    "settingsAutoSaveFailed": "Auto-save failed for settings: {{error}}",
+    "proxyTestSuccess": "Proxy test succeeded. Target: {{targetUrl}}, Final: {{finalUrl}}, Status: {{status}}, Mode: {{proxyMode}}, Proxy: {{proxy}}",
+    "proxyTestFailed": "Proxy test failed: {{error}}",
+    "translatorTestManual": "Manual mode does not support translator testing.",
+    "translatorTestSuccess": "Translator test succeeded. Translator: {{translator}}, Target: {{targetField}}, Source: {{sourceText}}, Output: {{outputText}}, Time: {{responseTime}} ms",
+    "translatorTestFailed": "Translator test failed for {{translator}}: {{error}}",
+    "asrTestSuccess": "ASR test succeeded.\nEndpoint: {{endpoint}}\nFinal: {{finalUrl}}\nStatus: {{status}}\nMode: {{proxyMode}}\nProxy: {{proxy}}\nTime: {{responseTime}} ms\nLanguage: {{language}}\nText: {{text}}\nBody: {{responseBody}}",
+    "asrTestFailed": "ASR test failed: {{error}}",
+    "asrTestSilentSample": "(empty text is normal for the built-in silent test audio)",
+    "maintenanceStarted": "Started maintenance cleanup for invisible-blank source rows.",
+    "maintenanceCleanedInvisibleBlankEntries": "Maintenance complete. Removed {{count}} source rows that were blank after invisible-whitespace cleanup.",
+    "maintenanceNoChanges": "Maintenance complete. No invisible-blank source rows were found.",
+    "maintenanceFailed": "Maintenance failed: {{error}}",
+    "glossaryImported": "Imported glossary from {{path}}. Terms: {{count}}",
+    "glossaryExported": "Exported glossary to {{path}}. Terms: {{count}}",
+    "scanComplete": "Scanned {{scanned}} arc files. New: {{newArcCount}}, Parsed: {{parsedCount}}, Failed: {{failedCount}}",
+    "reparsed": "{{arcFilename}} reparsed.",
+    "reparseAllComplete": "Retried all {{totalArcs}} arc files. Parsed: {{reparsedCount}}, Failed: {{failedCount}}, Skipped: {{skippedCount}}",
+    "reparseFailedComplete": "Retried {{totalFailed}} failed arc files. Parsed: {{reparsedCount}}, Failed: {{failedCount}}",
+    "loadedEntries": "Loaded up to {{limit}} records for this page, total {{total}}.",
+    "entrySaved": "Entry {{id}} saved.",
+    "translateStarted": "Started batch translation with {{translator}}. LLM request and response logs will stream below.",
+    "sourceRecognitionStarted": "Started source recognition with {{provider}}. Request and response logs will stream below.",
+    "stopRequested": "Stop requested for the current task.",
+    "taskStopped": "Current task stopped.",
+    "autoSaveFailed": "Auto-save failed for entry {{id}}: {{error}}",
+    "batchStatusUpdated": "Updated {{updated}} filtered entries to status {{status}}.",
+    "batchDeleted": "Deleted {{deleted}} filtered entries.",
+    "clearTranslationsComplete": "Cleared translated and polished text for {{updated}} filtered entries.",
+    "importComplete": "Import complete. Files: {{filesProcessed}}, Lines: {{totalLines}}, Inserted: {{inserted}}, Updated: {{updated}}, Skipped: {{skipped}}, Unmatched: {{unmatched}}, Errors: {{errorLines}}",
+    "exportComplete": "Export complete. Exported: {{exported}}, Skipped: {{skipped}}, Output: {{outputPath}}",
+    "translateComplete": "Translation complete. Total: {{total}}, Processed: {{processed}}, Updated: {{updated}}, Skipped: {{skipped}}, Failed: {{failed}}",
+    "sourceRecognitionComplete": "Source recognition complete with {{provider}}. Total: {{total}}, Processed: {{processed}}, Updated: {{updated}}, Skipped: {{skipped}}, Failed: {{failed}}"
+  },
+  "status": {
+    "new": "New",
+    "translated": "Translated",
+    "polished": "Polished",
+    "reviewed": "Reviewed"
+  },
+  "arcStatus": {
+    "new": "New",
+    "parsing": "Parsing",
+    "parsed": "Parsed",
+    "failed": "Failed"
+  }
+}

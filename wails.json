@@ -1,0 +1,13 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "COM3D2TranslateTool",
+  "outputfilename": "COM3D2TranslateTool",
+  "frontend:install": "pnpm install --config.confirmModulesPurge=false",
+  "frontend:build": "pnpm run build",
+  "frontend:dev:watcher": "pnpm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "90135",
+    "email": "193311049+90135@users.noreply.github.com"
+  }
+}

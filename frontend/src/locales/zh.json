@@ -1,0 +1,386 @@
+{
+  "common": {
+    "appName": "COM3D2 翻译工具",
+    "workflow": "COM3D2 翻译工作流",
+    "all": "全部",
+    "busy": "忙碌",
+    "idle": "空闲",
+    "stop": "停止",
+    "stopping": "正在停止...",
+    "ready": "就绪。",
+    "save": "保存",
+    "choose": "选择",
+    "chooseFile": "选择文件",
+    "chooseFolder": "选择文件夹",
+    "noMessagesYet": "还没有消息。"
+  },
+  "language": {
+    "label": "语言",
+    "en": "English",
+    "zh": "中文"
+  },
+  "page": {
+    "translate": "翻译",
+    "tools": "设置 / 导入 / 导出"
+  },
+  "topbar": {
+    "arcCount": "Arc {{count}}",
+    "entryCount": "条目 {{count}}"
+  },
+  "filters": {
+    "title": "筛选",
+    "refreshEntries": "搜索",
+    "scanNewArc": "扫描新 Arc",
+    "search": "关键词",
+    "arc": "Arc",
+    "sourceFile": "源文件",
+    "sourceFileHint": "精确文件名，例如 example.ks。模糊匹配请使用上方搜索框。",
+    "type": "类型",
+    "status": "状态",
+    "onlyUntranslated": "仅显示未翻译"
+  },
+  "arcTable": {
+    "title": "Arc 文件",
+    "filename": "文件名",
+    "status": "状态",
+    "parsedAt": "解析时间",
+    "action": "操作",
+    "reparseAll": "一键重新解析全部（{{count}}）",
+    "reparse": "重新解析",
+    "reparseFailed": "一键重新解析失败项（{{count}}）"
+  },
+  "entryTable": {
+    "title": "条目",
+    "context": "上下文",
+    "original": "原文",
+    "translated": "译文",
+    "polished": "润色",
+    "status": "状态",
+    "action": "操作",
+    "pageInfo": "第 {{page}} / {{totalPages}} 页",
+    "rangeInfo": "第 {{from}}-{{to}} 条，共 {{total}} 条",
+    "previousPage": "上一页",
+    "nextPage": "下一页",
+    "autoSaveHelp": "条目编辑会在短暂停顿后自动保存。",
+    "batchHelp": "批量操作会作用于当前筛选命中的全部条目，不只是当前页。",
+    "applyFilteredStatus": "批量修改筛选状态",
+    "clearFilteredTranslations": "清空已筛选条目的译文",
+    "clearTranslationsConfirm": "确认清空 {{total}} 个已筛选条目的译文和润色文本？"
+  },
+  "settings": {
+    "title": "设置",
+    "save": "保存设置",
+    "autoSaveHelp": "修改后会在短暂停顿后自动保存。",
+    "arcScanDirectory": "Arc 扫描目录",
+    "workDirectory": "工作目录",
+    "defaultImportDirectory": "默认导入目录",
+    "defaultExportDirectory": "默认导出目录",
+    "noArcScanDirectory": "未选择扫描目录",
+    "noWorkDirectory": "未选择工作目录",
+    "noDefaultImportDirectory": "未选择默认导入目录",
+    "noDefaultExportDirectory": "未选择默认导出目录",
+    "selectArcScanDirectory": "选择 Arc 扫描目录",
+    "selectWorkDirectory": "选择工作目录",
+    "selectDefaultImportDirectory": "选择默认导入目录",
+    "selectDefaultExportDirectory": "选择默认导出目录"
+  },
+  "importSection": {
+    "title": "导入",
+    "run": "执行导入",
+    "importer": "导入器",
+    "sourceFile": "来源文件",
+    "sourceDirectory": "来源目录",
+    "noImportFile": "未选择导入文件",
+    "noImportDirectory": "未选择导入目录",
+    "selectSourceDirectory": "选择导入来源目录",
+    "allowOverwrite": "允许覆盖已有译文"
+  },
+  "exportSection": {
+    "title": "导出",
+    "run": "执行导出",
+    "exporter": "导出器",
+    "outputFile": "输出文件",
+    "noExportFile": "未选择导出文件",
+    "selectOutputFile": "选择导出文件",
+    "skipEmptyFinal": "跳过没有最终文本的行",
+    "help": "以 UTF-8 文本导出，格式为 原文<TAB>最终文本。"
+  },
+  "maintenanceSection": {
+    "title": "维护",
+    "run": "清理空白原文条目",
+    "help": "手动执行数据库清理，删除那些在不可见空白字符规范化后原文会变成空串的记录。为避免启动卡顿，此操作不再随应用启动自动执行。"
+  },
+  "translationSection": {
+    "title": "批量翻译",
+    "run": "执行翻译",
+    "provider": "翻译器",
+    "targetField": "写入字段",
+    "languagePair": "语言方向",
+    "allowOverwrite": "允许覆盖目标字段已有内容",
+    "help": "按当前筛选条件批量调用 {{provider}}。LLM 会优先按单个 KS 文件分批，并附带说话人、voice_id、类型和邻近文本上下文。",
+    "manualHelp": "手动翻译不提供自动接口。请切换到 Google、Baidu、OpenAI Chat 或 OpenAI Responses。"
+  },
+  "sourceRecognitionSection": {
+    "title": "原文补录",
+    "run": "执行识别",
+    "provider": "提供方",
+    "targetField": "写入字段",
+    "language": "识别语言",
+    "allowOverwrite": "允许覆盖已有原文",
+    "help": "会在当前筛选条件下查找 playvoice_notext 条目，按 voice_id 在来源 arc 中匹配音频文件名，提取音频后发送到 ASR 接口，并把识别结果写回 source_text。"
+  },
+  "importers": {
+    "arc-ks-folder-text": {
+      "label": "Arc 文件夹 / KS 文本",
+      "help": "导入目录结构为 arc文件夹名\\ks文件名.txt 的文本，每行格式为 原文<TAB>译文。"
+    },
+    "arc-source-text-file": {
+      "label": "Arc 源文本",
+      "help": "导入按 arc 命名的 .txt 文件，例如 script.txt 或 script.arc.txt。每行可以是原文，或 原文<TAB>译文。"
+    },
+    "entry-jsonl": {
+      "label": "条目快照 JSONL",
+      "help": "导入由本工具导出的 JSONL 条目快照。可保留来源标识字段、译文、润色文本、状态以及时间戳等细节。"
+    },
+    "ks-extract-csv": {
+      "label": "ks_extract CSV",
+      "help": "导入 ks_extract 导出的 CSV，按来源 arc、来源文件和原文匹配；当类型、voice_id、角色存在时也会参与匹配。"
+    },
+    "translated-csv": {
+      "label": "已翻译 CSV",
+      "help": "导入包含 *_translated.csv 的目录。程序会回推对应 .ks 文件名，并从数据库中推断已有 arc。"
+    }
+  },
+  "exporters": {
+    "tab-text": {
+      "label": "JAT 通用文本翻译模块格式",
+      "help": "以 UTF-8 文本导出为 JAT 通用文本模块可直接读取的格式。会按 JAT 规则转义换行、Tab、反斜杠等字符；若原文以 ; 或 $ 开头，则该行会被直接跳过，不导出。由于该格式无法保留来源信息，每条原文最终只会保留一行；若同一原文存在多个候选结果，则优先选择带润色/已审核的版本，其次选择较新的版本。"
+    },
+    "entry-jsonl": {
+      "label": "条目快照 JSONL",
+      "help": "将完整条目记录导出为逐行 JSON，便于之后重新导入且不丢失类型、voiceId、角色、来源 arc/文件、译文、润色文本、状态和时间戳等字段。"
+    }
+  },
+  "translators": {
+    "manual": {
+      "label": "手动",
+      "help": "仅用于手动编辑，不会发起自动翻译请求。"
+    },
+    "google-translate": {
+      "label": "Google 翻译",
+      "help": "使用 Google Cloud Translation API。需要 API Key。"
+    },
+    "baidu-translate": {
+      "label": "百度翻译",
+      "help": "使用百度通用文本翻译 API。需要 AppID 和密钥。"
+    },
+    "openai-chat": {
+      "label": "OpenAI Chat",
+      "help": "使用 OpenAI Chat Completions 接口。支持自定义 baseURL、model、prompt 和额外 JSON 参数。"
+    },
+    "openai-responses": {
+      "label": "OpenAI Responses",
+      "help": "使用 OpenAI Responses 接口。支持自定义 baseURL、model、prompt 和额外 JSON 参数。"
+    },
+    "qwen3-asr": {
+      "label": "Qwen3-ASR",
+      "help": "使用兼容 OpenAI 风格音频转写接口的 Qwen3-ASR 服务，为 playvoice_notext 条目补回原文。"
+    }
+  },
+  "translationTarget": {
+    "translated": "译文",
+    "polished": "润色文本",
+    "source_text": "原文"
+  },
+  "translationSettings": {
+    "title": "翻译设置",
+    "activeProvider": "当前翻译器",
+    "sourceLanguage": "源语言",
+    "targetLanguage": "目标语言",
+    "proxy": {
+      "mode": "代理",
+      "system": "系统代理",
+      "direct": "直连",
+      "custom": "自定义代理",
+      "test": "测试代理",
+      "testing": "测试中...",
+      "url": "代理地址",
+      "help": "适用于 LLM、机器翻译和 ASR 请求，默认使用系统代理。在 Windows 上会优先读取系统 Internet 设置，读不到时再回退到环境变量代理。"
+    },
+    "glossary": "LLM 术语表",
+    "glossarySource": "原文",
+    "glossaryPreferred": "推荐译法",
+    "glossaryNote": "备注",
+    "importGlossary": "导入术语表",
+    "exportGlossary": "导出术语表",
+    "addGlossaryRow": "添加术语",
+    "removeGlossaryRow": "删除",
+    "testTranslator": "测试当前翻译器",
+    "testTranslatorRunning": "测试翻译器中...",
+    "glossaryHelp": "所有 LLM 翻译器共用。按表单填写原文、推荐译法和备注即可，推荐译法可以留空。前端会保存为 JSON，后端只会把命中当前原文、邻近文本、说话人、类型、voice_id、arc 或文件的条目发给 LLM。",
+    "manualHelp": "手动模式下不需要额外配置。",
+    "google": {
+      "baseUrl": "Google Base URL",
+      "apiKey": "Google API Key",
+      "format": "格式",
+      "model": "模型",
+      "batchSize": "批大小",
+      "timeoutSeconds": "超时秒数"
+    },
+    "baidu": {
+      "baseUrl": "百度 Base URL",
+      "appId": "百度 AppID",
+      "secret": "百度密钥",
+      "timeoutSeconds": "超时秒数"
+    },
+    "asr": {
+      "title": "原文补录（ASR）",
+      "baseUrl": "ASR Base URL",
+      "language": "语言",
+      "prompt": "提示词",
+      "batchSize": "批大小",
+      "concurrency": "并发数",
+      "timeoutSeconds": "超时秒数",
+      "test": "测试 ASR",
+      "testing": "正在测试 ASR...",
+      "help": "供“原文补录”使用。程序会先从来源 arc 中提取匹配到的语音文件，再发送到这个兼容 OpenAI 风格的音频转写接口。当批大小大于 1 时，会把批请求发送到 /batch 接口；若该批请求失败，再自动回退为逐条单文件请求。"
+    },
+    "openai": {
+      "baseUrl": "OpenAI Base URL",
+      "apiKey": "API Key",
+      "model": "模型",
+      "batchSize": "批大小",
+      "concurrency": "并发数",
+      "timeoutSeconds": "超时秒数",
+      "reasoningEffort": "推理强度",
+      "temperature": "Temperature",
+      "topP": "Top P",
+      "presencePenalty": "Presence Penalty",
+      "frequencyPenalty": "Frequency Penalty",
+      "maxOutputTokens": "最大输出 Token",
+      "prompt": "自定义提示词",
+      "extraJson": "额外 JSON 参数",
+      "promptHelp": "留空时使用内置提示词。自定义提示词支持占位符：{{source_language}}、{{target_language}}、{{target_field}}、{{mode_instruction}}、{{context_instruction}}、{{glossary}}、{{response_format}}。",
+      "placeholders": "占位符说明：{{source_language}}=源语言，{{target_language}}=目标语言，{{target_field}}=写入字段，{{mode_instruction}}=当前任务说明（翻译或润色），{{context_instruction}}=上下文约束，{{glossary}}=格式化后的术语表 JSON，{{response_format}}=必须返回的 JSON 格式说明。",
+      "extraJsonHelp": "填写合法 JSON 对象，可附加官方接口支持的额外参数。"
+    }
+  },
+  "statusPanel": {
+    "title": "状态"
+  },
+  "importProgress": {
+    "files": "文件",
+    "lines": "行",
+    "inserted": "新增",
+    "updated": "更新",
+    "skipped": "跳过",
+    "unmatched": "未匹配",
+    "errors": "错误",
+    "waitingFile": "等待下一个文件",
+    "phase": {
+      "pending": "等待中",
+      "starting": "启动中",
+      "running": "处理中",
+      "committing": "提交中",
+      "completed": "已完成",
+      "failed": "失败"
+    }
+  },
+  "exportProgress": {
+    "rows": "行",
+    "exported": "导出",
+    "skipped": "跳过",
+    "waitingOutput": "等待输出文件",
+    "phase": {
+      "pending": "等待中",
+      "starting": "启动中",
+      "running": "处理中",
+      "flushing": "写入中",
+      "completed": "已完成",
+      "failed": "失败"
+    }
+  },
+  "translateProgress": {
+    "total": "总数",
+    "processed": "已处理",
+    "updated": "已写入",
+    "skipped": "跳过",
+    "failed": "失败",
+    "targetField": "目标字段",
+    "waitingItem": "等待下一个条目",
+    "phase": {
+      "pending": "等待中",
+      "starting": "启动中",
+      "running": "处理中",
+      "stopped": "已停止",
+      "completed": "已完成",
+      "failed": "失败"
+    }
+  },
+  "dialogs": {
+    "csvFiles": "CSV 文件",
+    "jsonFiles": "JSON 文件",
+    "jsonlFiles": "JSONL 文件",
+    "textFiles": "文本文件",
+    "selectGlossaryImportFile": "选择术语表文件",
+    "selectGlossaryExportFile": "保存术语表文件",
+    "selectEntryJSONL": "选择条目快照 JSONL",
+    "selectKsExtractCsv": "选择 ks_extract CSV",
+    "selectTranslatedCsv": "选择 translated CSV",
+    "selectArcSourceTextFile": "选择 arc 源文本文件",
+    "selectImportSourceDirectory": "选择导入来源目录",
+    "selectExportFile": "选择导出文件"
+  },
+  "messages": {
+    "getSettingsFailed": "GetSettings 失败：{{error}}",
+    "listImportersFailed": "ListImporters 失败：{{error}}",
+    "listExportersFailed": "ListExporters 失败：{{error}}",
+    "listTranslatorsFailed": "ListTranslators 失败：{{error}}",
+    "settingsSaved": "设置已保存。",
+    "settingsAutoSaveFailed": "设置自动保存失败：{{error}}",
+    "proxyTestSuccess": "代理测试成功。目标：{{targetUrl}}，最终地址：{{finalUrl}}，状态：{{status}}，模式：{{proxyMode}}，代理：{{proxy}}",
+    "proxyTestFailed": "代理测试失败：{{error}}",
+    "translatorTestManual": "手动模式不支持翻译器测试。",
+    "translatorTestSuccess": "翻译器测试成功。翻译器：{{translator}}，目标字段：{{targetField}}，原文：{{sourceText}}，输出：{{outputText}}，耗时：{{responseTime}} ms",
+    "translatorTestFailed": "翻译器测试失败（{{translator}}）：{{error}}",
+    "asrTestSuccess": "ASR 测试成功。\n接口：{{endpoint}}\n最终地址：{{finalUrl}}\n状态：{{status}}\n代理模式：{{proxyMode}}\n代理：{{proxy}}\n耗时：{{responseTime}} ms\n识别语言：{{language}}\n识别文本：{{text}}\n响应体：{{responseBody}}",
+    "asrTestFailed": "ASR 测试失败：{{error}}",
+    "asrTestSilentSample": "（内置静音测试音频返回空文本属于正常现象）",
+    "maintenanceStarted": "已开始清理仅含不可见空白字符的原文条目。",
+    "maintenanceCleanedInvisibleBlankEntries": "维护完成。已删除 {{count}} 条在不可见空白字符清理后原文为空的记录。",
+    "maintenanceNoChanges": "维护完成。未发现需要清理的空白原文条目。",
+    "maintenanceFailed": "维护失败：{{error}}",
+    "glossaryImported": "已从 {{path}} 导入术语表。术语数：{{count}}",
+    "glossaryExported": "已将术语表导出到 {{path}}。术语数：{{count}}",
+    "scanComplete": "已扫描 {{scanned}} 个 arc 文件。新增：{{newArcCount}}，解析成功：{{parsedCount}}，失败：{{failedCount}}",
+    "reparsed": "{{arcFilename}} 已重新解析。",
+    "reparseAllComplete": "已尝试重新解析全部 {{totalArcs}} 个 arc，成功：{{reparsedCount}}，失败：{{failedCount}}，跳过：{{skippedCount}}",
+    "reparseFailedComplete": "已尝试重新解析 {{totalFailed}} 个失败 arc，成功：{{reparsedCount}}，仍失败：{{failedCount}}",
+    "loadedEntries": "当前页最多加载 {{limit}} 条记录，总数 {{total}}。",
+    "entrySaved": "条目 {{id}} 已保存。",
+    "translateStarted": "已启动 {{translator}} 批量翻译，LLM 请求与返回日志会实时输出到下方状态栏。",
+    "sourceRecognitionStarted": "已启动 {{provider}} 原文补录，请求与返回日志会实时输出到下方状态栏。",
+    "stopRequested": "已请求停止当前任务。",
+    "taskStopped": "当前任务已停止。",
+    "autoSaveFailed": "条目 {{id}} 自动保存失败：{{error}}",
+    "batchStatusUpdated": "已将 {{updated}} 个已筛选条目更新为状态 {{status}}。",
+    "batchDeleted": "已删除 {{deleted}} 个已筛选条目。",
+    "clearTranslationsComplete": "已清空 {{updated}} 个已筛选条目的译文和润色文本。",
+    "importComplete": "导入完成。文件：{{filesProcessed}}，行：{{totalLines}}，新增：{{inserted}}，更新：{{updated}}，跳过：{{skipped}}，未匹配：{{unmatched}}，错误：{{errorLines}}",
+    "exportComplete": "导出完成。导出：{{exported}}，跳过：{{skipped}}，输出：{{outputPath}}",
+    "translateComplete": "翻译完成。总数：{{total}}，处理：{{processed}}，写入：{{updated}}，跳过：{{skipped}}，失败：{{failed}}",
+    "sourceRecognitionComplete": "原文补录完成。提供方：{{provider}}，总数：{{total}}，处理：{{processed}}，写入：{{updated}}，跳过：{{skipped}}，失败：{{failed}}"
+  },
+  "status": {
+    "new": "未翻译",
+    "translated": "已翻译",
+    "polished": "已润色",
+    "reviewed": "已审核"
+  },
+  "arcStatus": {
+    "new": "新建",
+    "parsing": "解析中",
+    "parsed": "已解析",
+    "failed": "失败"
+  }
+}
