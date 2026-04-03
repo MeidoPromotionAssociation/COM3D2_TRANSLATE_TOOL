@@ -206,6 +206,8 @@
     "activeProvider": "Active Translator",
     "sourceLanguage": "Source Language",
     "targetLanguage": "Target Language",
+    "retryCount": "Retry Count",
+    "retryHelp": "Extra retry attempts after the first failed batch. Failed entries stay in the retry queue until this limit is exhausted.",
     "proxy": {
       "mode": "Proxy",
       "system": "System Proxy",

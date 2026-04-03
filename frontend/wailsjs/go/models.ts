@@ -563,6 +563,7 @@ export namespace model {
 	    sourceLanguage: string;
 	    targetLanguage: string;
 	    glossary: string;
+	    retryCount: number;
 	    proxy: ProxyConfig;
 	    google: GoogleTranslateConfig;
 	    baidu: BaiduTranslateConfig;
@@ -580,6 +581,7 @@ export namespace model {
 	        this.sourceLanguage = source["sourceLanguage"];
 	        this.targetLanguage = source["targetLanguage"];
 	        this.glossary = source["glossary"];
+	        this.retryCount = source["retryCount"];
 	        this.proxy = this.convertValues(source["proxy"], ProxyConfig);
 	        this.google = this.convertValues(source["google"], GoogleTranslateConfig);
 	        this.baidu = this.convertValues(source["baidu"], BaiduTranslateConfig);

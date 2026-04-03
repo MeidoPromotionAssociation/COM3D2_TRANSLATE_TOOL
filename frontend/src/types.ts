@@ -101,6 +101,7 @@ export type TranslationSettings = {
     sourceLanguage: string;
     targetLanguage: string;
     glossary: string;
+    retryCount: number;
     proxy: ProxyConfig;
     google: GoogleTranslateConfig;
     baidu: BaiduTranslateConfig;

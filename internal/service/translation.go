@@ -18,6 +18,11 @@ type translationBatch struct {
 	entries []model.Entry
 }
 
+type translationBatchTask struct {
+	batch   translationBatch
+	attempt int
+}
+
 type indexedTranslationEntry struct {
 	entry      model.Entry
 	groupIndex int
@@ -27,6 +32,13 @@ type preparedTranslationBatch struct {
 	translateEntries []indexedTranslationEntry
 	immediateUpdates []model.UpdateEntryInput
 	duplicateEntries map[string][]model.Entry
+}
+
+type executedTranslationBatch struct {
+	processed           int
+	updated             int
+	skipped             int
+	duplicateReuseCount int
 }
 
 type translationReuseCache struct {
@@ -155,49 +167,93 @@ func (s *Service) RunTranslation(ctx context.Context, req model.TranslateRequest
 
 	var resultMu sync.Mutex
 	duplicateReuseCount := 0
-	tasks := make(chan translationBatch, concurrency)
-	var workers sync.WaitGroup
-
-	for worker := 0; worker < concurrency; worker++ {
-		workers.Add(1)
-		go func() {
-			defer workers.Done()
-			for {
-				select {
-				case <-ctx.Done():
-					return
-				case batch, ok := <-tasks:
-					if !ok {
-						return
-					}
-					s.processTranslationBatch(
-						ctx,
-						impl,
-						settings.Translation,
-						targetField,
-						batch,
-						translation.IsLLMTranslator(name),
-						reuseCache,
-						&duplicateReuseCount,
-						runtime,
-						&result,
-						&resultMu,
-					)
-				}
-			}
-		}()
-	}
-
-dispatchLoop:
+	retryCount := settings.Translation.RetryCount
+	tasksForRound := make([]translationBatchTask, 0, len(batches))
 	for _, batch := range batches {
-		select {
-		case <-ctx.Done():
-			break dispatchLoop
-		case tasks <- batch:
-		}
+		tasksForRound = append(tasksForRound, translationBatchTask{batch: batch})
 	}
-	close(tasks)
-	workers.Wait()
+
+	for len(tasksForRound) > 0 {
+		tasks := make(chan translationBatchTask, concurrency)
+		nextRound := make([]translationBatchTask, 0)
+		var nextRoundMu sync.Mutex
+		var workers sync.WaitGroup
+
+		for worker := 0; worker < concurrency; worker++ {
+			workers.Add(1)
+			go func() {
+				defer workers.Done()
+				for {
+					select {
+					case <-ctx.Done():
+						return
+					case task, ok := <-tasks:
+						if !ok {
+							return
+						}
+
+						stats, err := s.executeTranslationBatch(
+							ctx,
+							impl,
+							settings.Translation,
+							targetField,
+							task.batch,
+							translation.IsLLMTranslator(name),
+							reuseCache,
+							runtime,
+						)
+						if err != nil {
+							if ctx.Err() != nil {
+								return
+							}
+
+							batchPreview := previewEntry(task.batch.entries[0])
+							if task.attempt < retryCount {
+								emitTranslationRetryLog(ctx, name, task, retryCount, err)
+								nextRoundMu.Lock()
+								nextRound = append(nextRound, translationBatchTask{
+									batch:   task.batch,
+									attempt: task.attempt + 1,
+								})
+								nextRoundMu.Unlock()
+								continue
+							}
+
+							runtime.MarkFailed(batchPreview, len(task.batch.entries))
+							resultMu.Lock()
+							result.Failed += len(task.batch.entries)
+							result.Messages = append(result.Messages, fmt.Sprintf("%s: %v (after %d attempt(s))", batchPreview, err, task.attempt+1))
+							resultMu.Unlock()
+							continue
+						}
+
+						resultMu.Lock()
+						duplicateReuseCount += stats.duplicateReuseCount
+						result.Processed += stats.processed
+						result.Updated += stats.updated
+						result.Skipped += stats.skipped
+						resultMu.Unlock()
+					}
+				}
+			}()
+		}
+
+	dispatchLoop:
+		for _, task := range tasksForRound {
+			select {
+			case <-ctx.Done():
+				break dispatchLoop
+			case tasks <- task:
+			}
+		}
+		close(tasks)
+		workers.Wait()
+
+		if ctx.Err() != nil {
+			break
+		}
+		tasksForRound = nextRound
+	}
 
 	if ctx.Err() != nil {
 		result.Messages = append(result.Messages, "Translation stopped.")
@@ -367,7 +423,7 @@ func buildTranslationItemsFromIndexed(group []model.Entry, entries []indexedTran
 	return items
 }
 
-func (s *Service) processTranslationBatch(
+func (s *Service) executeTranslationBatch(
 	ctx context.Context,
 	impl translation.Translator,
 	settings model.TranslationSettings,
@@ -375,30 +431,22 @@ func (s *Service) processTranslationBatch(
 	batch translationBatch,
 	includeContext bool,
 	reuseCache *translationReuseCache,
-	duplicateReuseCount *int,
 	runtime *translation.Runtime,
-	result *model.TranslateResult,
-	resultMu *sync.Mutex,
-) {
+) (executedTranslationBatch, error) {
 	if len(batch.entries) == 0 {
-		return
+		return executedTranslationBatch{}, nil
 	}
 	if ctx.Err() != nil {
-		return
+		return executedTranslationBatch{}, ctx.Err()
 	}
 
 	batchPreview := previewEntry(batch.entries[0])
 	runtime.MarkRunning(batchPreview)
 
 	plan := prepareTranslationBatch(batch, targetField, reuseCache)
-	batchDuplicateReuse := len(plan.immediateUpdates) + duplicateEntryCount(plan.duplicateEntries)
-	if batchDuplicateReuse > 0 {
-		resultMu.Lock()
-		*duplicateReuseCount += batchDuplicateReuse
-		resultMu.Unlock()
-	}
 	updateInputs := append([]model.UpdateEntryInput(nil), plan.immediateUpdates...)
 	skippedIDs := make(map[int64]bool)
+	cacheUpdates := make(map[string]string)
 
 	if len(plan.translateEntries) > 0 {
 		items := buildTranslationItemsFromIndexed(batch.group, plan.translateEntries, includeContext)
@@ -408,15 +456,7 @@ func (s *Service) processTranslationBatch(
 			TargetField: targetField,
 		})
 		if err != nil {
-			if ctx.Err() != nil {
-				return
-			}
-			runtime.MarkFailed(batchPreview, len(batch.entries))
-			resultMu.Lock()
-			result.Failed += len(batch.entries)
-			result.Messages = append(result.Messages, fmt.Sprintf("%s: %v", batchPreview, err))
-			resultMu.Unlock()
-			return
+			return executedTranslationBatch{}, err
 		}
 
 		baseEntries := make([]model.Entry, 0, len(plan.translateEntries))
@@ -426,15 +466,7 @@ func (s *Service) processTranslationBatch(
 
 		translatedUpdates, translatedSkipped, err := buildTranslationUpdates(baseEntries, translations, targetField)
 		if err != nil {
-			if ctx.Err() != nil {
-				return
-			}
-			runtime.MarkFailed(batchPreview, len(batch.entries))
-			resultMu.Lock()
-			result.Failed += len(batch.entries)
-			result.Messages = append(result.Messages, fmt.Sprintf("%s: %v", batchPreview, err))
-			resultMu.Unlock()
-			return
+			return executedTranslationBatch{}, err
 		}
 		updateInputs = append(updateInputs, translatedUpdates...)
 		for id := range translatedSkipped {
@@ -454,7 +486,7 @@ func (s *Service) processTranslationBatch(
 
 			text := textByID[indexed.entry.ID]
 			if strings.TrimSpace(text) != "" && !translatedSkipped[indexed.entry.ID] {
-				reuseCache.Put(key, text)
+				cacheUpdates[key] = text
 				for _, duplicate := range plan.duplicateEntries[key] {
 					updateInputs = append(updateInputs, buildTranslationUpdateInput(duplicate, targetField, text))
 				}
@@ -467,38 +499,31 @@ func (s *Service) processTranslationBatch(
 		}
 	}
 
+	if ctx.Err() != nil {
+		return executedTranslationBatch{}, ctx.Err()
+	}
 	if _, err := s.store.ApplyEntryUpdates(updateInputs); err != nil {
-		if ctx.Err() != nil {
-			return
-		}
-		runtime.MarkFailed(batchPreview, len(batch.entries))
-		resultMu.Lock()
-		result.Failed += len(batch.entries)
-		result.Messages = append(result.Messages, fmt.Sprintf("%s: %v", batchPreview, err))
-		resultMu.Unlock()
-		return
+		return executedTranslationBatch{}, err
+	}
+	for key, value := range cacheUpdates {
+		reuseCache.Put(key, value)
 	}
 
-	processed := 0
-	updated := 0
-	skipped := 0
+	stats := executedTranslationBatch{
+		duplicateReuseCount: len(plan.immediateUpdates) + duplicateEntryCount(plan.duplicateEntries),
+	}
 	for _, entry := range batch.entries {
-		processed++
+		stats.processed++
 		if skippedIDs[entry.ID] {
-			skipped++
+			stats.skipped++
 			runtime.MarkSkipped(previewEntry(entry))
 			continue
 		}
 
-		updated++
+		stats.updated++
 		runtime.MarkUpdated(previewEntry(entry))
 	}
-
-	resultMu.Lock()
-	result.Processed += processed
-	result.Updated += updated
-	result.Skipped += skipped
-	resultMu.Unlock()
+	return stats, nil
 }
 
 func (s *Service) reuseExistingTranslations(
@@ -700,4 +725,28 @@ func previewEntry(entry model.Entry) string {
 		return entry.SourceFile + " [" + entry.Role + "] " + text
 	}
 	return entry.SourceFile + " " + text
+}
+
+func emitTranslationRetryLog(ctx context.Context, translatorName string, task translationBatchTask, retryCount int, err error) {
+	if err == nil || len(task.batch.entries) == 0 {
+		return
+	}
+
+	content := strings.TrimSpace(fmt.Sprintf(
+		"Batch: %s (%d entries)\nAttempt: %d/%d\nQueued Retry: %d/%d\nError: %v",
+		previewEntry(task.batch.entries[0]),
+		len(task.batch.entries),
+		task.attempt+1,
+		retryCount+1,
+		task.attempt+1,
+		retryCount,
+		err,
+	))
+
+	translation.EmitLog(ctx, model.TranslateLog{
+		Translator: translatorName,
+		Kind:       "retry",
+		Title:      "Translation Retry",
+		Content:    content,
+	})
 }

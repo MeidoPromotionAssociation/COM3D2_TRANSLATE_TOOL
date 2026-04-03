@@ -13,6 +13,7 @@ type TranslationSettings struct {
 	SourceLanguage   string                `json:"sourceLanguage"`
 	TargetLanguage   string                `json:"targetLanguage"`
 	Glossary         string                `json:"glossary"`
+	RetryCount       int                   `json:"retryCount"`
 	Proxy            ProxyConfig           `json:"proxy"`
 	Google           GoogleTranslateConfig `json:"google"`
 	Baidu            BaiduTranslateConfig  `json:"baidu"`
@@ -352,6 +353,7 @@ func DefaultTranslationSettings() TranslationSettings {
 		ActiveTranslator: "manual",
 		SourceLanguage:   "ja",
 		TargetLanguage:   "zh-CN",
+		RetryCount:       1,
 		Proxy: ProxyConfig{
 			Mode: "system",
 		},
@@ -400,6 +402,9 @@ func NormalizeTranslationSettings(settings TranslationSettings) TranslationSetti
 	}
 	if settings.TargetLanguage == "" {
 		settings.TargetLanguage = defaults.TargetLanguage
+	}
+	if settings.RetryCount < 0 {
+		settings.RetryCount = defaults.RetryCount
 	}
 	switch settings.Proxy.Mode {
 	case "system", "direct", "custom":

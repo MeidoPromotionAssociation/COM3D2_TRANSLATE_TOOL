@@ -61,6 +61,7 @@ const emptyTranslationSettings: TranslationSettings = {
     sourceLanguage: "ja",
     targetLanguage: "zh-CN",
     glossary: "",
+    retryCount: 1,
     proxy: {
         mode: "system",
         url: "",
@@ -455,6 +456,14 @@ function parseInteger(value: string, fallback: number) {
         return fallback;
     }
     return Math.max(1, Math.round(parsed));
+}
+
+function parseNonNegativeInteger(value: string, fallback: number) {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) {
+        return fallback;
+    }
+    return Math.max(0, Math.round(parsed));
 }
 
 function isCanceledError(error: unknown) {
@@ -2314,6 +2323,16 @@ function App() {
                                     <input
                                         value={settings.translation.targetLanguage}
                                         onChange={(event) => updateTranslationField("targetLanguage", event.target.value)}
+                                    />
+                                </label>
+                                <label>
+                                    <span>{t("translationSettings.retryCount")}</span>
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        title={t("translationSettings.retryHelp")}
+                                        value={settings.translation.retryCount}
+                                        onChange={(event) => updateTranslationField("retryCount", parseNonNegativeInteger(event.target.value, 1))}
                                     />
                                 </label>
                                 <label>

@@ -532,6 +532,13 @@ func (s *Store) GetSettings() (model.Settings, error) {
 		if err := json.Unmarshal([]byte(raw), &translationSettings); err != nil {
 			return model.Settings{}, err
 		}
+
+		var marker struct {
+			RetryCount *int `json:"retryCount"`
+		}
+		if err := json.Unmarshal([]byte(raw), &marker); err == nil && marker.RetryCount == nil {
+			translationSettings.RetryCount = model.DefaultTranslationSettings().RetryCount
+		}
 	}
 
 	return model.Settings{

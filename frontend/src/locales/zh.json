@@ -206,6 +206,8 @@
     "activeProvider": "当前翻译器",
     "sourceLanguage": "源语言",
     "targetLanguage": "目标语言",
+    "retryCount": "重试次数",
+    "retryHelp": "表示首轮失败后的额外重试次数。失败条目会进入重试队列，直到达到这个上限。",
     "proxy": {
       "mode": "代理",
       "system": "系统代理",

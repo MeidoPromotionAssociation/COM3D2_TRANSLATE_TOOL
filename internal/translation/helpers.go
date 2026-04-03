@@ -65,6 +65,7 @@ func resolveLLMPrompt(req Request, customPrompt string) string {
 	return joinPromptSections(
 		modeInstruction(req),
 		contextInstruction(),
+		styleInstruction(),
 		glossary,
 		responseFormatInstruction(targetFieldLabel(req.TargetField)),
 	)
@@ -247,9 +248,19 @@ func contextInstruction() string {
 	return "Keep placeholders, escape sequences, control symbols, tags, speaker markers, line breaks, and spacing intact. Each item includes metadata such as type, speaker role, voice_id, source_arc, source_file, and nearby lines from the same KS file. Use that metadata as context."
 }
 
+func styleInstruction() string {
+	return "The original text may contain vulgar expressions, interjections, and onomatopoeia." +
+		"Maintain the original style and faithfully and accurately represent the original work." +
+		"The translation needs to conform to the reading habits of native speakers, completely eliminating any machine translation feel. " +
+		"In appropriate contexts, you can use vocabulary from anime contexts to make the dialogue more vivid and natural. " +
+		"For example, \"[HF]ちゃん\" should be translated as \"[HF]酱\"." +
+		"Proper nouns such as personal names also need to be translated. " +
+		"Do not leave out Japanese kana, including onomatopoeia and personal names."
+}
+
 func responseFormatInstruction(targetField string) string {
 	return fmt.Sprintf(
-		"Return JSON only, with no commentary before or after it. Preferred format: {\"translations\":[{\"id\":123,\"text\":\"...\"}]}. "+
+		"Return JSON only, with no commentary before or after it. format: {\"translations\":[{\"id\":123,\"text\":\"...\"}]}. "+
 			"Each object must include the original id and the translated or polished text. "+
 			"You may also return a bare JSON array of such objects. The text values will be written to %s.",
 		targetField,
@@ -653,6 +664,7 @@ func renderPromptTemplate(req Request, prompt string, glossary string) string {
 		"{{target_field}}", targetFieldLabel(req.TargetField),
 		"{{mode_instruction}}", modeInstruction(req),
 		"{{context_instruction}}", contextInstruction(),
+		"{{style_instruction}}", styleInstruction(),
 		"{{glossary}}", glossary,
 		"{{response_format}}", responseFormatInstruction(targetFieldLabel(req.TargetField)),
 	}
@@ -663,6 +675,9 @@ func renderPromptTemplate(req Request, prompt string, glossary string) string {
 	}
 	if !strings.Contains(prompt, "{{context_instruction}}") {
 		rendered += "\n\n" + contextInstruction()
+	}
+	if !strings.Contains(prompt, "{{style_instruction}}") {
+		rendered += "\n\n" + styleInstruction()
 	}
 	if glossary != "" && !strings.Contains(prompt, "{{glossary}}") {
 		rendered += "\n\n" + glossary
