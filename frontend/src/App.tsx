@@ -59,8 +59,8 @@ const emptyOpenAIProvider: OpenAIProviderConfig = {
 
 const emptyTranslationSettings: TranslationSettings = {
     activeTranslator: "manual",
-    sourceLanguage: "ja",
-    targetLanguage: "zh-CN",
+    sourceLanguage: "Japanese",
+    targetLanguage: "Simplified Chinese",
     glossary: "",
     retryCount: 1,
     proxy: {
@@ -1867,7 +1867,7 @@ function App() {
                             <label>
                                 <span>{t("translationSection.languagePair")}</span>
                                 <div className="readonly-chip">
-                                    {settings.translation.sourceLanguage || "auto"} → {settings.translation.targetLanguage || "auto"}
+                                    {settings.translation.sourceLanguage || "auto"} {"->"} {settings.translation.targetLanguage || "auto"}
                                 </div>
                             </label>
                         </div>
@@ -2130,7 +2130,7 @@ function App() {
                                 <label>
                                     <span>{t("translationSection.languagePair")}</span>
                                     <div className="readonly-chip">
-                                        {settings.translation.sourceLanguage || "auto"} 鈫?{settings.translation.targetLanguage || "auto"}
+                                        {settings.translation.sourceLanguage || "auto"} {"->"} {settings.translation.targetLanguage || "auto"}
                                     </div>
                                 </label>
                             </div>
