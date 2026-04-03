@@ -305,21 +305,21 @@ export type SourceRecognitionResult = {
 };
 
 export type TranslateProgress = {
-  translator: string;
-  targetField: string;
-  currentItem: string;
-  total: number;
+    translator: string;
+    targetField: string;
+    currentItem: string;
+    total: number;
     processed: number;
     updated: number;
     skipped: number;
-  failed: number;
-  phase: string;
+    failed: number;
+    phase: string;
 };
 
 export type TranslateLog = {
-  translator: string;
-  kind: string;
-  title: string;
-  content: string;
-  timestamp: string;
+    translator: string;
+    kind: string;
+    title: string;
+    content: string;
+    timestamp: string;
 };

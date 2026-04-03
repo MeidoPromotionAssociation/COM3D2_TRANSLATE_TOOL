@@ -4,9 +4,14 @@
 
 Desktop translation workflow manager for **CUSTOM ORDER MAID 3D2 / COM3D2**.
 
-This project is a **Wails + Go + React** desktop application focused on managing a large COM3D2 translation database instead of patching the game at runtime. It integrates ARC scanning, ARC extraction, KAG parsing, translation storage, manual editing, batch translation, glossary management, `playvoice_notext` handling, optional ASR source-text backfill, and import/export pipelines into a single tool.
+This project is a **Wails + Go + React** desktop application focused on managing a large COM3D2 translation database
+instead of patching the game at runtime. It integrates ARC scanning, ARC extraction, KAG parsing, translation storage,
+manual editing, batch translation, glossary management, `playvoice_notext` handling, optional ASR source-text backfill,
+and import/export pipelines into a single tool.
 
-The application is designed for large datasets. It uses **SQLite3**, manual pagination, autosave, filtered batch operations, translation progress reporting, and LLM request deduplication so that multi-million-entry databases remain manageable.
+The application is designed for large datasets. It uses **SQLite3**, manual pagination, autosave, filtered batch
+operations, translation progress reporting, and LLM request deduplication so that multi-million-entry databases remain
+manageable.
 
 ## English
 
@@ -20,7 +25,9 @@ The application is designed for large datasets. It uses **SQLite3**, manual pagi
 
 ### What This Tool Is For
 
-COM3D2 stores a large amount of scenario text inside `.arc` archives and `.ks` KAG scripts. After game updates, new ARC files are added and existing translation workflows often become fragmented across external unpackers, CSV tools, handwritten text files, and ad-hoc scripts.
+COM3D2 stores a large amount of scenario text inside `.arc` archives and `.ks` KAG scripts. After game updates, new ARC
+files are added and existing translation workflows often become fragmented across external unpackers, CSV tools,
+handwritten text files, and ad-hoc scripts.
 
 This tool centralizes that workflow:
 
@@ -29,14 +36,14 @@ This tool centralizes that workflow:
 - Extract only the required `.ks` files automatically
 - Parse KAG script content into a structured SQLite database
 - Store and manage the mapping:
-  - `type`
-  - `voice_id`
-  - `role`
-  - `source_arc`
-  - `source_file`
-  - `source_text`
-  - `translated_text`
-  - `polished_text`
+    - `type`
+    - `voice_id`
+    - `role`
+    - `source_arc`
+    - `source_file`
+    - `source_text`
+    - `translated_text`
+    - `polished_text`
 - Edit translations manually with autosave
 - Translate in batches with Google, Baidu, or OpenAI-compatible APIs
 - Backfill missing source text for `playvoice_notext` rows with an ASR server
@@ -52,42 +59,43 @@ In practice, it replaces the manual workflow of:
 ### Core Features
 
 - **Integrated ARC workflow**
-  - ARC unpacking is built in via MeidoSerialization.
-  - Users do not need to manually unpack `.arc` files before parsing.
+    - ARC unpacking is built in via MeidoSerialization.
+    - Users do not need to manually unpack `.arc` files before parsing.
 - **Integrated KAG parsing**
-  - The app extracts and parses `.ks` files directly.
-  - It functionally absorbs the workflow that previously required separate `ks_extract` / `ks_split` style tooling.
+    - The app extracts and parses `.ks` files directly.
+    - It functionally absorbs the workflow that previously required separate `ks_extract` / `ks_split` style tooling.
 - **SQLite3 translation database**
-  - Unique identity key:
-    - `type + voice_id + role + source_arc + source_file + source_text`
-  - Translation and polish data are stored per entry.
+    - Unique identity key:
+        - `type + voice_id + role + source_arc + source_file + source_text`
+    - Translation and polish data are stored per entry.
 - **Large-dataset oriented UI**
-  - Manual pagination on the entry page
-  - Debounced autosave for entry edits
-  - Debounced autosave for settings and glossary
-  - Filter-based batch operations
+    - Manual pagination on the entry page
+    - Debounced autosave for entry edits
+    - Debounced autosave for settings and glossary
+    - Filter-based batch operations
 - **Multiple translation backends**
-  - Manual editing
-  - Google Translate
-  - Baidu Translate
-  - OpenAI Chat Completions compatible APIs
-  - OpenAI Responses compatible APIs
+    - Manual editing
+    - Google Translate
+    - Baidu Translate
+    - OpenAI Chat Completions compatible APIs
+    - OpenAI Responses compatible APIs
 - **Optional source recognition for voice-only lines**
-  - `playvoice_notext` rows preserve `voice_id` even when no source text is available during KAG parsing.
-  - The app can later extract matching voice audio from the original ARC and send it to an ASR server to write recognized text back into `source_text`.
+    - `playvoice_notext` rows preserve `voice_id` even when no source text is available during KAG parsing.
+    - The app can later extract matching voice audio from the original ARC and send it to an ASR server to write
+      recognized text back into `source_text`.
 - **Extensible importer/exporter interfaces**
-  - Importers and exporters are implemented as interfaces so more formats can be added later.
+    - Importers and exporters are implemented as interfaces so more formats can be added later.
 - **Status and progress reporting**
-  - ARC scan results
-  - Import progress
-  - Export progress
-  - Batch translation progress
-  - Source recognition progress
-  - Live LLM / ASR request / response / error logs
+    - ARC scan results
+    - Import progress
+    - Export progress
+    - Batch translation progress
+    - Source recognition progress
+    - Live LLM / ASR request / response / error logs
 - **Glossary tooling**
-  - Built-in glossary editor
-  - JSON import / export for glossary files
-  - Context-aware glossary filtering before sending LLM requests
+    - Built-in glossary editor
+    - JSON import / export for glossary files
+    - Context-aware glossary filtering before sending LLM requests
 
 ### Data Model
 
@@ -139,7 +147,8 @@ If you need to rebuild existing ARC data, use:
 - **Reparse Failed** for all failed ARC files
 - **Reparse All** for every ARC already known to the database
 
-`Reparse All` is the correct action when parser behavior changes and you want to rebuild existing stored rows, for example:
+`Reparse All` is the correct action when parser behavior changes and you want to rebuild existing stored rows, for
+example:
 
 - after adding support for new KAG patterns such as `playvoice_notext`
 - after changing deduplication or preservation logic
@@ -206,7 +215,8 @@ The parser also captures contextual metadata when available:
 
 #### `playvoice_notext` behavior
 
-`playvoice_notext` is used for KAG voice playback entries where a `voice_id` exists but no directly extractable comment text is present in the script.
+`playvoice_notext` is used for KAG voice playback entries where a `voice_id` exists but no directly extractable comment
+text is present in the script.
 
 When this happens, the parser stores a row with:
 
@@ -216,9 +226,11 @@ When this happens, the parser stores a row with:
 - normal `source_file`
 - empty `source_text`
 
-This is intentional. It allows the database to preserve the identity of a voice-only line first, and then optionally fill the missing original text later through ASR.
+This is intentional. It allows the database to preserve the identity of a voice-only line first, and then optionally
+fill the missing original text later through ASR.
 
-When the same ARC is reparsed later, the tool preserves ASR-filled `source_text` for matching `playvoice_notext` rows instead of wiping it back to empty, as long as the fallback identity still matches:
+When the same ARC is reparsed later, the tool preserves ASR-filled `source_text` for matching `playvoice_notext` rows
+instead of wiping it back to empty, as long as the fallback identity still matches:
 
 - `type`
 - `voice_id`
@@ -234,7 +246,8 @@ Encoding handling is built in. The parser can handle:
 
 ### Source Recognition / ASR Backfill
 
-Some COM3D2 workflows, including JAT-related text modules, need to reason about voice lines that do not expose source text in the KAG script itself. This tool handles that in two stages:
+Some COM3D2 workflows, including JAT-related text modules, need to reason about voice lines that do not expose source
+text in the KAG script itself. This tool handles that in two stages:
 
 1. parse and store the `playvoice_notext` row immediately
 2. optionally recover `source_text` later by running source recognition
@@ -255,7 +268,8 @@ Important matching rule:
 - audio lookup is based on filename / basename match against `voice_id`
 - the current implementation assumes there are no duplicate audio filenames inside a single ARC
 
-This makes it possible to preserve voice-only lines in the database immediately, and then gradually backfill missing originals later without reparsing the game scripts again.
+This makes it possible to preserve voice-only lines in the database immediately, and then gradually backfill missing
+originals later without reparsing the game scripts again.
 
 #### Supported ASR server shape
 
@@ -264,9 +278,9 @@ The built-in source-recognition client currently targets an **OpenAI-style audio
 Supported endpoints are:
 
 - single-file:
-  - `POST /v1/audio/transcriptions`
+    - `POST /v1/audio/transcriptions`
 - batch:
-  - `POST /v1/audio/transcriptions/batch`
+    - `POST /v1/audio/transcriptions/batch`
 
 The current recommended server is:
 
@@ -275,13 +289,13 @@ The current recommended server is:
 The app expects the same basic form fields described by that server:
 
 - single mode:
-  - multipart `file`
-  - optional `language`
-  - optional `prompt`
+    - multipart `file`
+    - optional `language`
+    - optional `prompt`
 - batch mode:
-  - multipart `files`
-  - optional repeated or shared `language`
-  - optional repeated or shared `prompt`
+    - multipart `files`
+    - optional repeated or shared `language`
+    - optional repeated or shared `prompt`
 
 #### ASR request behavior
 
@@ -310,7 +324,8 @@ This separation is deliberate:
 
 ### Source Text Normalization And Blank Cleanup
 
-Source text is normalized aggressively during parsing and importing to prevent invisible-garbage rows from polluting the database.
+Source text is normalized aggressively during parsing and importing to prevent invisible-garbage rows from polluting the
+database.
 
 Normalization includes:
 
@@ -318,20 +333,22 @@ Normalization includes:
 - trimming regular whitespace
 - trimming full-width spaces
 - removing BOM and zero-width style characters such as:
-  - `U+180E`
-  - `U+200B`
-  - `U+200C`
-  - `U+200D`
-  - `U+2060`
-  - `U+FEFF`
+    - `U+180E`
+    - `U+200B`
+    - `U+200C`
+    - `U+200D`
+    - `U+2060`
+    - `U+FEFF`
 
 If the resulting source text becomes empty:
 
 - new parsed/imported rows are skipped
 
-For historical databases, the tool also includes a **manual maintenance action** that deletes legacy rows whose `source_text` becomes empty after the same invisible-whitespace normalization.
+For historical databases, the tool also includes a **manual maintenance action** that deletes legacy rows whose
+`source_text` becomes empty after the same invisible-whitespace normalization.
 
-This cleanup is **manual on purpose**. It no longer runs automatically at startup, because scanning millions of rows during launch can freeze the app on very large databases.
+This cleanup is **manual on purpose**. It no longer runs automatically at startup, because scanning millions of rows
+during launch can freeze the app on very large databases.
 
 ### Translation Workflow
 
@@ -354,17 +371,17 @@ Manual editing happens directly in the entry table:
 Current non-LLM translators:
 
 - **Google Translate**
-  - configurable base URL
-  - API key
-  - format
-  - model
-  - batch size
-  - timeout
+    - configurable base URL
+    - API key
+    - format
+    - model
+    - batch size
+    - timeout
 - **Baidu Translate**
-  - configurable base URL
-  - AppID
-  - secret
-  - timeout
+    - configurable base URL
+    - AppID
+    - secret
+    - timeout
 
 #### LLM translation
 
@@ -401,7 +418,8 @@ For LLM translators, batches are grouped by:
 - `source_arc`
 - `source_file`
 
-This means lines from the same `.ks` file stay together whenever possible. If a file is larger than the configured batch size, the file is split into multiple batches, but batching still respects file boundaries.
+This means lines from the same `.ks` file stay together whenever possible. If a file is larger than the configured batch
+size, the file is split into multiple batches, but batching still respects file boundaries.
 
 Each LLM item can include:
 
@@ -444,7 +462,8 @@ For custom prompts, the following placeholders are supported:
 - `{{glossary}}`
 - `{{response_format}}`
 
-If a custom prompt omits some of these sections, the app automatically appends the missing mode/context/glossary/response-format instructions so the request still remains valid.
+If a custom prompt omits some of these sections, the app automatically appends the missing
+mode/context/glossary/response-format instructions so the request still remains valid.
 
 #### Translate vs polish
 
@@ -455,12 +474,13 @@ For normal translation:
 For polish mode:
 
 - the model is asked to use:
-  - `source_text`
-  - `existing_translated`
+    - `source_text`
+    - `existing_translated`
 - and produce:
-  - `polished_text`
+    - `polished_text`
 
-This means polish mode is explicitly a **source + existing translation -> polished result** workflow, not just a blind retranslation.
+This means polish mode is explicitly a **source + existing translation -> polished result** workflow, not just a blind
+retranslation.
 
 ### LLM Glossary Details
 
@@ -474,7 +494,8 @@ The UI currently edits simple rows with:
 
 The glossary is stored as JSON in settings and can also be imported/exported as JSON files.
 
-At request time, the app does **not** dump the entire glossary into every prompt. Instead, it filters glossary entries against the current batch context using:
+At request time, the app does **not** dump the entire glossary into every prompt. Instead, it filters glossary entries
+against the current batch context using:
 
 - current source text
 - previous source text
@@ -499,7 +520,8 @@ The parser is tolerant:
 
 ### LLM Response Parsing And Compatibility
 
-This project intentionally avoids forcing official OpenAI JSON-schema body constraints into requests, because many OpenAI-compatible backends do not implement them correctly.
+This project intentionally avoids forcing official OpenAI JSON-schema body constraints into requests, because many
+OpenAI-compatible backends do not implement them correctly.
 
 Instead:
 
@@ -512,9 +534,9 @@ Accepted response styles include:
 - JSON array of strings
 - JSON array of objects with `id` + text
 - wrapped objects such as:
-  - `{"translations":[...]}`
-  - `{"items":[...]}`
-  - `{"results":[...]}`
+    - `{"translations":[...]}`
+    - `{"items":[...]}`
+    - `{"results":[...]}`
 - JSON object mapping `id -> text`
 - fenced code blocks
 - extra commentary before or after the JSON, as long as a valid JSON object/array can still be extracted
@@ -536,12 +558,12 @@ Before new translator calls are made, the app searches existing database rows.
 Reuse rules are conservative:
 
 - For `translated` target:
-  - reuse only when a given `source_text` has exactly **one unique** non-empty `translated_text` across the database
+    - reuse only when a given `source_text` has exactly **one unique** non-empty `translated_text` across the database
 - For `polished` target:
-  - reuse only when a given pair of
-    - `source_text`
-    - `translated_text`
-    has exactly **one unique** non-empty `polished_text` across the database
+    - reuse only when a given pair of
+        - `source_text`
+        - `translated_text`
+          has exactly **one unique** non-empty `polished_text` across the database
 
 If multiple conflicting candidates exist, nothing is reused automatically for that key.
 
@@ -628,7 +650,8 @@ When present, these soft hint columns are also used:
 - `voice_id`
 - `role`
 
-Those hint columns are allowed to be empty. If they do not match anything, the importer falls back to the required identity columns.
+Those hint columns are allowed to be empty. If they do not match anything, the importer falls back to the required
+identity columns.
 
 #### `translated-csv`
 
@@ -677,9 +700,12 @@ source<TAB>final_text
 JAT compatibility details:
 
 - the exporter writes UTF-8 text using JAT-compatible escaping for `\n`, `\t`, `\\`, and related special characters
-- if a source text starts with `;` or `$`, the exporter skips that row instead of writing an ambiguous line that JAT would parse as a comment or regex rule
-- for `playvoice` and `playvoice_notext` rows, the exporter uses `voice_id` as the source-side key instead of `source_text`
-- this makes source lines containing real newlines, tabs, and backslashes loadable by JAT without manual post-processing, while reserved-leading rows are reported as skipped
+- if a source text starts with `;` or `$`, the exporter skips that row instead of writing an ambiguous line that JAT
+  would parse as a comment or regex rule
+- for `playvoice` and `playvoice_notext` rows, the exporter uses `voice_id` as the source-side key instead of
+  `source_text`
+- this makes source lines containing real newlines, tabs, and backslashes loadable by JAT without manual
+  post-processing, while reserved-leading rows are reported as skipped
 
 Important limitation:
 
@@ -703,7 +729,8 @@ Format:
 voice_id<TAB>final_text
 ```
 
-This exporter is meant for JAT-style custom subtitle loading where the lookup key is the voice file identifier instead of the original script text.
+This exporter is meant for JAT-style custom subtitle loading where the lookup key is the voice file identifier instead
+of the original script text.
 
 `final_text` means:
 
@@ -715,13 +742,14 @@ Export rules:
 - only rows with non-empty `voice_id` and non-empty `final_text` participate
 - rows are deduplicated by `voice_id`
 - if multiple rows share the same `voice_id`, the exporter prefers:
-  1. rows with `polished_text`
-  2. then higher review state
-  3. then newer `updated_at`
-  4. then newer `id`
+    1. rows with `polished_text`
+    2. then higher review state
+    3. then newer `updated_at`
+    4. then newer `id`
 - output escaping rules are the same as `tab-text`
 
-This is useful when you want to drive subtitles directly from voice playback keys, including `playvoice` and `playvoice_notext` workflows.
+This is useful when you want to drive subtitles directly from voice playback keys, including `playvoice` and
+`playvoice_notext` workflows.
 
 #### `entry-jsonl`
 
@@ -826,7 +854,8 @@ This repository is licensed under the **BSD 3-Clause License**.
 
 ### 这个工具是做什么的
 
-COM3D2 的大量剧情文本存放在 `.arc` 压缩包与 `.ks` KAG 脚本中。游戏更新后，常见流程往往会分散在外部解包器、CSV 工具、零散文本文件和临时脚本之间，维护成本很高。
+COM3D2 的大量剧情文本存放在 `.arc` 压缩包与 `.ks` KAG 脚本中。游戏更新后，常见流程往往会分散在外部解包器、CSV
+工具、零散文本文件和临时脚本之间，维护成本很高。
 
 本工具把这些步骤集中到一个桌面应用中：
 
@@ -835,14 +864,14 @@ COM3D2 的大量剧情文本存放在 `.arc` 压缩包与 `.ks` KAG 脚本中。
 - 自动提取其中需要的 `.ks` 文件
 - 解析 KAG 脚本并写入 SQLite 数据库
 - 管理如下映射关系：
-  - `type`
-  - `voice_id`
-  - `role`
-  - `source_arc`
-  - `source_file`
-  - `source_text`
-  - `translated_text`
-  - `polished_text`
+    - `type`
+    - `voice_id`
+    - `role`
+    - `source_arc`
+    - `source_file`
+    - `source_text`
+    - `translated_text`
+    - `polished_text`
 - 手动编辑并自动保存
 - 批量调用 Google / 百度 / OpenAI 兼容接口翻译
 - 用 ASR 服务为 `playvoice_notext` 条目补回缺失原文
@@ -859,42 +888,42 @@ COM3D2 的大量剧情文本存放在 `.arc` 压缩包与 `.ks` KAG 脚本中。
 ### 核心特性
 
 - **内建 ARC 工作流**
-  - 通过 MeidoSerialization 直接读取 / 解包 ARC
-  - 不需要用户先手动处理 `.arc`
+    - 通过 MeidoSerialization 直接读取 / 解包 ARC
+    - 不需要用户先手动处理 `.arc`
 - **内建 KAG 解析**
-  - 直接提取并解析 `.ks`
-  - 功能上吸收了过去依赖 `ks_extract` / `ks_split` 的流程
+    - 直接提取并解析 `.ks`
+    - 功能上吸收了过去依赖 `ks_extract` / `ks_split` 的流程
 - **SQLite3 翻译数据库**
-  - 唯一键为：
-    - `type + voice_id + role + source_arc + source_file + source_text`
-  - 每条记录都可保存译文与润色文本
+    - 唯一键为：
+        - `type + voice_id + role + source_arc + source_file + source_text`
+    - 每条记录都可保存译文与润色文本
 - **面向大数据量的界面**
-  - 条目页手动翻页
-  - 条目编辑防抖自动保存
-  - 设置与术语表防抖自动保存
-  - 基于筛选条件的批量操作
+    - 条目页手动翻页
+    - 条目编辑防抖自动保存
+    - 设置与术语表防抖自动保存
+    - 基于筛选条件的批量操作
 - **多种翻译后端**
-  - 手动编辑
-  - Google Translate
-  - Baidu Translate
-  - OpenAI Chat 兼容接口
-  - OpenAI Responses 兼容接口
+    - 手动编辑
+    - Google Translate
+    - Baidu Translate
+    - OpenAI Chat 兼容接口
+    - OpenAI Responses 兼容接口
 - **可选的语音原文补录**
-  - 对于 KAG 里没有直接原文的 `playvoice_notext`，程序会先保留 `voice_id` 落库。
-  - 之后可按原始 ARC 提取对应语音，并调用 ASR 服务把识别结果写回 `source_text`。
+    - 对于 KAG 里没有直接原文的 `playvoice_notext`，程序会先保留 `voice_id` 落库。
+    - 之后可按原始 ARC 提取对应语音，并调用 ASR 服务把识别结果写回 `source_text`。
 - **导入 / 导出接口可扩展**
-  - 导入器和导出器都做成了接口，后续可继续扩展格式
+    - 导入器和导出器都做成了接口，后续可继续扩展格式
 - **状态与进度可见**
-  - ARC 扫描状态
-  - 导入进度
-  - 导出进度
-  - 批量翻译进度
-  - 原文补录进度
-  - LLM / ASR 请求 / 返回 / 报错实时日志
+    - ARC 扫描状态
+    - 导入进度
+    - 导出进度
+    - 批量翻译进度
+    - 原文补录进度
+    - LLM / ASR 请求 / 返回 / 报错实时日志
 - **术语表能力**
-  - 内建术语表编辑器
-  - 术语表 JSON 导入 / 导出
-  - 发送给 LLM 前会先做上下文筛选
+    - 内建术语表编辑器
+    - 术语表 JSON 导入 / 导出
+    - 发送给 LLM 前会先做上下文筛选
 
 ### 数据模型
 
@@ -1028,7 +1057,8 @@ COM3D2 的大量剧情文本存放在 `.arc` 压缩包与 `.ks` KAG 脚本中。
 
 这是刻意设计的。目的不是“跳过这条”，而是先把这条语音行的身份信息落库，之后再通过 ASR 补回原文。
 
-如果后续已经用 ASR 给这条 `playvoice_notext` 填回了 `source_text`，再次重新解析同一个 ARC 时，程序也不会简单把它冲回空串。只要下面这组回退身份仍然一致，就会保留 ASR 识别出的原文：
+如果后续已经用 ASR 给这条 `playvoice_notext` 填回了 `source_text`，再次重新解析同一个 ARC
+时，程序也不会简单把它冲回空串。只要下面这组回退身份仍然一致，就会保留 ASR 识别出的原文：
 
 - `type`
 - `voice_id`
@@ -1077,9 +1107,9 @@ COM3D2 的大量剧情文本存放在 `.arc` 压缩包与 `.ks` KAG 脚本中。
 支持的接口形态为：
 
 - 单文件：
-  - `POST /v1/audio/transcriptions`
+    - `POST /v1/audio/transcriptions`
 - 批量：
-  - `POST /v1/audio/transcriptions/batch`
+    - `POST /v1/audio/transcriptions/batch`
 
 当前推荐配合使用的服务是：
 
@@ -1088,13 +1118,13 @@ COM3D2 的大量剧情文本存放在 `.arc` 压缩包与 `.ks` KAG 脚本中。
 程序默认假定它的表单字段与该服务说明一致：
 
 - 单文件模式：
-  - multipart `file`
-  - 可选 `language`
-  - 可选 `prompt`
+    - multipart `file`
+    - 可选 `language`
+    - 可选 `prompt`
 - 批量模式：
-  - multipart `files`
-  - 可选重复或共享的 `language`
-  - 可选重复或共享的 `prompt`
+    - multipart `files`
+    - 可选重复或共享的 `language`
+    - 可选重复或共享的 `prompt`
 
 #### ASR 请求行为
 
@@ -1131,12 +1161,12 @@ COM3D2 的大量剧情文本存放在 `.arc` 压缩包与 `.ks` KAG 脚本中。
 - 去除普通空白
 - 去除全角空格
 - 去除 BOM 与零宽字符，例如：
-  - `U+180E`
-  - `U+200B`
-  - `U+200C`
-  - `U+200D`
-  - `U+2060`
-  - `U+FEFF`
+    - `U+180E`
+    - `U+200B`
+    - `U+200C`
+    - `U+200D`
+    - `U+2060`
+    - `U+FEFF`
 
 如果规范化后原文变成空串：
 
@@ -1169,17 +1199,17 @@ COM3D2 的大量剧情文本存放在 `.arc` 压缩包与 `.ks` KAG 脚本中。
 当前非 LLM 翻译器包括：
 
 - **Google Translate**
-  - 可配置 base URL
-  - API key
-  - format
-  - model
-  - batch size
-  - timeout
+    - 可配置 base URL
+    - API key
+    - format
+    - model
+    - batch size
+    - timeout
 - **Baidu Translate**
-  - 可配置 base URL
-  - AppID
-  - secret
-  - timeout
+    - 可配置 base URL
+    - AppID
+    - secret
+    - timeout
 
 #### LLM 翻译
 
@@ -1270,10 +1300,10 @@ LLM 翻译不是简单地“一条一请求”。
 润色模式下：
 
 - 模型会拿到：
-  - `source_text`
-  - `existing_translated`
+    - `source_text`
+    - `existing_translated`
 - 并生成：
-  - `polished_text`
+    - `polished_text`
 
 所以润色模式本质上是：
 
@@ -1331,9 +1361,9 @@ LLM 翻译不是简单地“一条一请求”。
 - JSON 字符串数组
 - 带 `id` + 文本字段的对象数组
 - 外层包装对象，例如：
-  - `{"translations":[...]}`
-  - `{"items":[...]}`
-  - `{"results":[...]}`
+    - `{"translations":[...]}`
+    - `{"items":[...]}`
+    - `{"results":[...]}`
 - `id -> text` 的 JSON 对象
 - Markdown 代码块包裹
 - JSON 前后有额外说明文字，只要还能提取出合法 JSON 对象 / 数组
@@ -1355,12 +1385,12 @@ LLM 翻译不是简单地“一条一请求”。
 复用规则是保守的：
 
 - 目标字段为 `translated` 时：
-  - 只有当同一个 `source_text` 在数据库里对应**唯一一个**非空 `translated_text` 时，才会自动复用
+    - 只有当同一个 `source_text` 在数据库里对应**唯一一个**非空 `translated_text` 时，才会自动复用
 - 目标字段为 `polished` 时：
-  - 只有当同一个：
-    - `source_text`
-    - `translated_text`
-    对应**唯一一个**非空 `polished_text` 时，才会自动复用
+    - 只有当同一个：
+        - `source_text`
+        - `translated_text`
+          对应**唯一一个**非空 `polished_text` 时，才会自动复用
 
 如果存在多个冲突候选，就不会自动复用。
 
@@ -1534,10 +1564,10 @@ voice_id<TAB>final_text
 - 只有 `voice_id` 非空且 `final_text` 非空的条目会参与导出
 - 程序会按 `voice_id` 去重
 - 如果同一个 `voice_id` 对应多条记录，会按以下优先级挑选最佳候选：
-  1. 有 `polished_text` 的行
-  2. 状态更高的行
-  3. `updated_at` 更新更晚的行
-  4. `id` 更大的行
+    1. 有 `polished_text` 的行
+    2. 状态更高的行
+    3. `updated_at` 更新更晚的行
+    4. `id` 更大的行
 - 转义规则与 `tab-text` 完全相同
 
 这个格式适合直接按语音播放键驱动字幕的场景，也适合 `playvoice` / `playvoice_notext` 相关工作流。

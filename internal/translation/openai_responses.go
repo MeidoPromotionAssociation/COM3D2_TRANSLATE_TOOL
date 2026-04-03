@@ -168,8 +168,8 @@ func validateResponsesAPIResult(
 }
 
 func extractResponsesText(output []struct {
-	Type   string `json:"type"`
-	Status string `json:"status"`
+	Type    string `json:"type"`
+	Status  string `json:"status"`
 	Content []struct {
 		Type    string `json:"type"`
 		Text    string `json:"text"`

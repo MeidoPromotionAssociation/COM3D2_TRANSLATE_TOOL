@@ -5,25 +5,25 @@ import {useTranslation} from "react-i18next";
 import {EventsOn} from "../wailsjs/runtime/runtime";
 import {persistLanguage} from "./i18n";
 import type {
-  ASRConfig,
-  ArcFile,
-  BaiduTranslateConfig,
-  Entry,
-  EntryQuery,
-  ExportProgress,
-  ExportRequest,
-  FilterOptions,
-  GoogleTranslateConfig,
-  ImportProgress,
-  ImportRequest,
-  OpenAIProviderConfig,
-  Settings,
-  SourceRecognitionRequest,
-  TranslateLog,
-  TranslateProgress,
-  TranslateRequest,
-  TranslationSettings,
-  UpdateEntryInput,
+    ArcFile,
+    ASRConfig,
+    BaiduTranslateConfig,
+    Entry,
+    EntryQuery,
+    ExportProgress,
+    ExportRequest,
+    FilterOptions,
+    GoogleTranslateConfig,
+    ImportProgress,
+    ImportRequest,
+    OpenAIProviderConfig,
+    Settings,
+    SourceRecognitionRequest,
+    TranslateLog,
+    TranslateProgress,
+    TranslateRequest,
+    TranslationSettings,
+    UpdateEntryInput,
 } from "./types";
 
 type Page = "translate" | "tools";
@@ -138,14 +138,14 @@ function formatSummary(lines: string[] | null | undefined) {
 }
 
 function appendSummary(base: string, summary: string) {
-  return summary ? `${base}\n${summary}` : base;
+    return summary ? `${base}\n${summary}` : base;
 }
 
 function trimStatusMessage(value: string) {
-  if (value.length <= statusMessageMaxChars) {
-    return value;
-  }
-  return "...\n" + value.slice(value.length - statusMessageMaxChars);
+    if (value.length <= statusMessageMaxChars) {
+        return value;
+    }
+    return "...\n" + value.slice(value.length - statusMessageMaxChars);
 }
 
 function joinPath(dir: string, name: string) {
@@ -167,7 +167,7 @@ function defaultExportFilename(exporter: string) {
 }
 
 function buildDefaultExportPath(exportDir: string, exporter: string) {
-  return joinPath(exportDir, defaultExportFilename(exporter));
+    return joinPath(exportDir, defaultExportFilename(exporter));
 }
 
 function displayPath(path: string, emptyLabel: string) {
@@ -184,24 +184,24 @@ function isQueryFiltered(query: EntryQuery) {
 }
 
 function toUpdateEntryInput(entry: Entry): UpdateEntryInput {
-  return {
-    id: entry.id,
-    translatedText: entry.translatedText,
-    polishedText: entry.polishedText,
-    translatorStatus: entry.translatorStatus,
-  };
+    return {
+        id: entry.id,
+        translatedText: entry.translatedText,
+        polishedText: entry.polishedText,
+        translatorStatus: entry.translatorStatus,
+    };
 }
 
 function formatTranslateLog(log: TranslateLog) {
-  const pieces = [
-    `[${log.timestamp || ""}]`,
-    log.translator || "translator",
-    log.title || log.kind || "log",
-  ].filter(Boolean);
+    const pieces = [
+        `[${log.timestamp || ""}]`,
+        log.translator || "translator",
+        log.title || log.kind || "log",
+    ].filter(Boolean);
 
-  const header = pieces.join(" ");
-  const content = (log.content || "").trim();
-  return content ? `${header}\n${content}` : header;
+    const header = pieces.join(" ");
+    const content = (log.content || "").trim();
+    return content ? `${header}\n${content}` : header;
 }
 
 function importerUsesFileSource(name: string) {
@@ -516,8 +516,8 @@ function glossaryRowsFromJSONValue(value: unknown): GlossaryRow[] {
             .filter((row): row is GlossaryRow => row !== null);
     }
 
-    if (value && typeof value === "object" && Array.isArray((value as {entries?: unknown[]}).entries)) {
-        return glossaryRowsFromJSONValue((value as {entries: unknown[]}).entries);
+    if (value && typeof value === "object" && Array.isArray((value as { entries?: unknown[] }).entries)) {
+        return glossaryRowsFromJSONValue((value as { entries: unknown[] }).entries);
     }
 
     if (value && typeof value === "object") {
@@ -700,24 +700,24 @@ function App() {
     const pageStart = entryTotal === 0 ? 0 : query.offset + 1;
     const pageEnd = entryTotal === 0 ? 0 : Math.min(query.offset + entries.length, entryTotal);
 
-  async function changeLanguage(nextLanguage: string) {
-    await i18n.changeLanguage(nextLanguage);
-    persistLanguage(nextLanguage);
-  }
-
-  function replaceStatusMessage(text: string) {
-    setMessage(trimStatusMessage(text.trim()));
-  }
-
-  function appendStatusMessage(text: string) {
-    const next = text.trim();
-    if (next === "") {
-      return;
+    async function changeLanguage(nextLanguage: string) {
+        await i18n.changeLanguage(nextLanguage);
+        persistLanguage(nextLanguage);
     }
-    setMessage((current) => trimStatusMessage(current.trim() === "" ? next : `${current}\n\n${next}`));
-  }
 
-  function clearAutosaveTimer(id: number) {
+    function replaceStatusMessage(text: string) {
+        setMessage(trimStatusMessage(text.trim()));
+    }
+
+    function appendStatusMessage(text: string) {
+        const next = text.trim();
+        if (next === "") {
+            return;
+        }
+        setMessage((current) => trimStatusMessage(current.trim() === "" ? next : `${current}\n\n${next}`));
+    }
+
+    function clearAutosaveTimer(id: number) {
         const timer = autosaveTimersRef.current.get(id);
         if (timer) {
             clearTimeout(timer);
@@ -1009,27 +1009,27 @@ function App() {
         return unsubscribe;
     }, []);
 
-  useEffect(() => {
-    const unsubscribe = EventsOn("translate:progress", (...data: unknown[]) => {
-      const next = data[0] as TranslateProgress | undefined;
-      if (next) {
-        setTranslateProgress(next);
+    useEffect(() => {
+        const unsubscribe = EventsOn("translate:progress", (...data: unknown[]) => {
+            const next = data[0] as TranslateProgress | undefined;
+            if (next) {
+                setTranslateProgress(next);
             }
-    });
-    return unsubscribe;
-  }, []);
+        });
+        return unsubscribe;
+    }, []);
 
-  useEffect(() => {
-    const unsubscribe = EventsOn("translate:log", (...data: unknown[]) => {
-      const next = data[0] as TranslateLog | undefined;
-      if (next) {
-        appendStatusMessage(formatTranslateLog(next));
-      }
-    });
-    return unsubscribe;
-  }, []);
+    useEffect(() => {
+        const unsubscribe = EventsOn("translate:log", (...data: unknown[]) => {
+            const next = data[0] as TranslateLog | undefined;
+            if (next) {
+                appendStatusMessage(formatTranslateLog(next));
+            }
+        });
+        return unsubscribe;
+    }, []);
 
-  useEffect(() => () => {
+    useEffect(() => () => {
         clearSettingsAutosaveTimer();
         settingsAutosaveReadyRef.current = false;
         for (const timer of autosaveTimersRef.current.values()) {
@@ -1594,14 +1594,14 @@ function App() {
             const result = await api.runTranslation(request);
             await Promise.all([refreshEntries(), refreshFilters()]);
             appendStatusMessage(appendSummary(
-              t("messages.translateComplete", {
-                total: result.total,
-                processed: result.processed,
-                updated: result.updated,
-                skipped: result.skipped,
-                failed: result.failed,
-              }),
-              formatSummary(ensureArray(result.messages).slice(0, 8)),
+                t("messages.translateComplete", {
+                    total: result.total,
+                    processed: result.processed,
+                    updated: result.updated,
+                    skipped: result.skipped,
+                    failed: result.failed,
+                }),
+                formatSummary(ensureArray(result.messages).slice(0, 8)),
             ));
         });
     }
@@ -2126,7 +2126,8 @@ function App() {
                             <div className="translate-grid">
                                 <label>
                                     <span>{t("sourceRecognitionSection.provider")}</span>
-                                    <div className="readonly-chip">{translateTranslatorLabel(asrTranslatorName, t)}</div>
+                                    <div
+                                        className="readonly-chip">{translateTranslatorLabel(asrTranslatorName, t)}</div>
                                 </label>
                                 <label>
                                     <span>{t("sourceRecognitionSection.targetField")}</span>
@@ -2308,7 +2309,7 @@ function App() {
                                             <strong>{t("translationSettings.glossarySource")}</strong>
                                             <strong>{t("translationSettings.glossaryPreferred")}</strong>
                                             <strong>{t("translationSettings.glossaryNote")}</strong>
-                                            <span />
+                                            <span/>
                                         </div>
                                         {glossaryRows.map((row) => (
                                             <div key={row.id} className="glossary-grid">
@@ -2619,7 +2620,8 @@ function App() {
                                 <p className="help">{t("translationSettings.manualHelp")}</p>}
                             {isAutomaticTranslator(currentTranslator) && (
                                 <div className="translator-actions">
-                                    <button type="button" disabled={busy || testingTranslator} onClick={testCurrentTranslator}>
+                                    <button type="button" disabled={busy || testingTranslator}
+                                            onClick={testCurrentTranslator}>
                                         {testingTranslator
                                             ? t("translationSettings.testTranslatorRunning")
                                             : t("translationSettings.testTranslator")}
