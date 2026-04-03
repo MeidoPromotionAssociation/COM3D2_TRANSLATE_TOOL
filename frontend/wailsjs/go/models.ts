@@ -413,6 +413,7 @@ export namespace model {
 	    apiKey: string;
 	    model: string;
 	    prompt: string;
+	    thinkingType: string;
 	    batchSize: number;
 	    concurrency: number;
 	    timeoutSeconds: number;
@@ -434,6 +435,7 @@ export namespace model {
 	        this.apiKey = source["apiKey"];
 	        this.model = source["model"];
 	        this.prompt = source["prompt"];
+	        this.thinkingType = source["thinkingType"];
 	        this.batchSize = source["batchSize"];
 	        this.concurrency = source["concurrency"];
 	        this.timeoutSeconds = source["timeoutSeconds"];

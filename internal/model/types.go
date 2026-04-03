@@ -80,6 +80,7 @@ type OpenAIProviderConfig struct {
 	APIKey           string   `json:"apiKey"`
 	Model            string   `json:"model"`
 	Prompt           string   `json:"prompt"`
+	ThinkingType     string   `json:"thinkingType"`
 	BatchSize        int      `json:"batchSize"`
 	Concurrency      int      `json:"concurrency"`
 	TimeoutSeconds   int      `json:"timeoutSeconds"`

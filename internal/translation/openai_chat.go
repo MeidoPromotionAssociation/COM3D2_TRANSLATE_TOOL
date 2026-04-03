@@ -65,6 +65,11 @@ func (OpenAIChatTranslator) Translate(ctx context.Context, req Request) ([]Resul
 	if cfg.MaxOutputTokens != nil {
 		body["max_completion_tokens"] = *cfg.MaxOutputTokens
 	}
+	if thinkingType := strings.TrimSpace(cfg.ThinkingType); thinkingType != "" {
+		body["thinking"] = map[string]any{
+			"type": thinkingType,
+		}
+	}
 	if effort := strings.TrimSpace(cfg.ReasoningEffort); effort != "" {
 		body["reasoning_effort"] = effort
 	}

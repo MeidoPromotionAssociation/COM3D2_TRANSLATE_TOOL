@@ -84,6 +84,7 @@ export type OpenAIProviderConfig = {
     apiKey: string;
     model: string;
     prompt: string;
+    thinkingType: string;
     batchSize: number;
     concurrency: number;
     timeoutSeconds: number;

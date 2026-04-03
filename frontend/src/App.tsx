@@ -44,6 +44,7 @@ const emptyOpenAIProvider: OpenAIProviderConfig = {
     apiKey: "",
     model: "gpt-5.4",
     prompt: "",
+    thinkingType: "",
     batchSize: 32,
     concurrency: 1,
     timeoutSeconds: 120,
@@ -2565,6 +2566,16 @@ function App() {
                                             onChange={(event) => updateOpenAIField(currentOpenAISettingsKey, "reasoningEffort", event.target.value)}
                                         />
                                     </label>
+                                    {currentOpenAISettingsKey === "openAIChat" && (
+                                        <label>
+                                            <span>{t("translationSettings.openai.thinkingType")}</span>
+                                            <input
+                                                value={settings.translation[currentOpenAISettingsKey].thinkingType}
+                                                placeholder="enabled / adaptive"
+                                                onChange={(event) => updateOpenAIField(currentOpenAISettingsKey, "thinkingType", event.target.value)}
+                                            />
+                                        </label>
+                                    )}
                                     <label>
                                         <span>{t("translationSettings.openai.temperature")}</span>
                                         <input
@@ -2617,6 +2628,9 @@ function App() {
                                     <p className="help wide-field">{t("translationSettings.openai.promptHelp")}</p>
                                     <div
                                         className="path-value wide-field">{t("translationSettings.openai.placeholders")}</div>
+                                    {currentOpenAISettingsKey === "openAIChat" && (
+                                        <p className="help wide-field">{t("translationSettings.openai.thinkingHelp")}</p>
+                                    )}
                                     <p className="help wide-field">{t("translationSettings.openai.extraJsonHelp")}</p>
                                 </div>
                             )}

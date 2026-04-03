@@ -264,6 +264,7 @@
       "concurrency": "Concurrency",
       "timeoutSeconds": "Timeout Seconds",
       "reasoningEffort": "Reasoning Effort",
+      "thinkingType": "Thinking Type",
       "temperature": "Temperature",
       "topP": "Top P",
       "presencePenalty": "Presence Penalty",
@@ -273,6 +274,7 @@
       "extraJson": "Extra JSON Parameters",
       "promptHelp": "Leave blank to use the built-in prompt. Custom prompts support placeholders: {{source_language}}, {{target_language}}, {{target_field}}, {{mode_instruction}}, {{context_instruction}}, {{glossary}}, and {{response_format}}.",
       "placeholders": "Placeholder reference: {{source_language}}=source language, {{target_language}}=target language, {{target_field}}=write target, {{mode_instruction}}=task-specific instruction for translate or polish, {{context_instruction}}=context constraints, {{glossary}}=formatted glossary instructions, {{response_format}}=required JSON output contract.",
+      "thinkingHelp": "Chat Completions only. Leave blank to disable. When set, the request body includes {\"thinking\":{\"type\":\"...\"}}. Use values such as enabled or adaptive for provider-compatible endpoints.",
       "extraJsonHelp": "Provide a valid JSON object to append additional official API parameters."
     }
   },

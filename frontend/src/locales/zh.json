@@ -264,6 +264,7 @@
       "concurrency": "并发数",
       "timeoutSeconds": "超时秒数",
       "reasoningEffort": "推理强度",
+      "thinkingType": "思考模式类型",
       "temperature": "Temperature",
       "topP": "Top P",
       "presencePenalty": "Presence Penalty",
@@ -273,6 +274,7 @@
       "extraJson": "额外 JSON 参数",
       "promptHelp": "留空时使用内置提示词。自定义提示词支持占位符：{{source_language}}、{{target_language}}、{{target_field}}、{{mode_instruction}}、{{context_instruction}}、{{glossary}}、{{response_format}}。",
       "placeholders": "占位符说明：{{source_language}}=源语言，{{target_language}}=目标语言，{{target_field}}=写入字段，{{mode_instruction}}=当前任务说明（翻译或润色），{{context_instruction}}=上下文约束，{{glossary}}=格式化后的术语表 JSON，{{response_format}}=必须返回的 JSON 格式说明。",
+      "thinkingHelp": "仅用于 Chat Completions。留空表示关闭。填写后会向请求体附加 {\"thinking\":{\"type\":\"...\"}}。例如可填 enabled 或 adaptive，以兼容不同提供方。",
       "extraJsonHelp": "填写合法 JSON 对象，可附加官方接口支持的额外参数。"
     }
   },
