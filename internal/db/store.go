@@ -2094,6 +2094,63 @@ ORDER BY source_arc ASC
 	return values, rows.Err()
 }
 
+func (s *Store) FindSourceArcsBySourceFiles(sourceFiles []string) (map[string][]string, error) {
+	result := make(map[string][]string)
+	if len(sourceFiles) == 0 {
+		return result, nil
+	}
+
+	unique := make([]string, 0, len(sourceFiles))
+	seen := make(map[string]struct{}, len(sourceFiles))
+	for _, sourceFile := range sourceFiles {
+		sourceFile = strings.TrimSpace(sourceFile)
+		if sourceFile == "" {
+			continue
+		}
+		if _, ok := seen[sourceFile]; ok {
+			continue
+		}
+		seen[sourceFile] = struct{}{}
+		unique = append(unique, sourceFile)
+		result[sourceFile] = []string{}
+	}
+
+	for start := 0; start < len(unique); start += reuseLookupChunkSize {
+		end := start + reuseLookupChunkSize
+		if end > len(unique) {
+			end = len(unique)
+		}
+		chunk := unique[start:end]
+
+		rows, err := s.db.Query(`
+SELECT DISTINCT source_file, source_arc
+FROM translation_entries
+WHERE source_file IN (`+sqlPlaceholders(len(chunk))+`)
+ORDER BY source_file ASC, source_arc ASC
+`, stringsToAny(chunk)...)
+		if err != nil {
+			return nil, err
+		}
+
+		for rows.Next() {
+			var sourceFile string
+			var sourceArc string
+			if err := rows.Scan(&sourceFile, &sourceArc); err != nil {
+				rows.Close()
+				return nil, err
+			}
+			result[sourceFile] = append(result[sourceFile], sourceArc)
+		}
+		if err := rows.Err(); err != nil {
+			rows.Close()
+			return nil, err
+		}
+		rows.Close()
+	}
+
+	return result, nil
+}
+
 func (s *ImportSession) FindSourceArcsBySourceFile(sourceFile string) ([]string, error) {
 	if cached, ok := s.sourceFileArcCache[sourceFile]; ok {
 		return append([]string(nil), cached...), nil
@@ -2120,6 +2177,18 @@ func (s *ImportSession) FindSourceArcsBySourceFile(sourceFile string) ([]string,
 	return values, nil
 }
 
+func (s *ImportSession) SeedSourceFileArcCache(values map[string][]string) {
+	if s == nil || len(values) == 0 {
+		return
+	}
+	if s.sourceFileArcCache == nil {
+		s.sourceFileArcCache = make(map[string][]string, len(values))
+	}
+	for sourceFile, sourceArcs := range values {
+		s.sourceFileArcCache[sourceFile] = append([]string(nil), sourceArcs...)
+	}
+}
+
 func (s *ImportSession) PrepareTranslatedCSVFile(sourceFile string) (*TranslatedCSVFileState, error) {
 	sourceFile = strings.TrimSpace(sourceFile)
 	if sourceFile == "" {
@@ -2130,16 +2199,18 @@ func (s *ImportSession) PrepareTranslatedCSVFile(sourceFile string) (*Translated
 	if err != nil {
 		return nil, err
 	}
-	if len(sourceArcs) == 0 {
-		sourceArcs = []string{""}
-	}
-
 	state := &TranslatedCSVFileState{
 		session:      s,
 		sourceFile:   sourceFile,
-		sourceArcs:   append([]string(nil), sourceArcs...),
 		entriesByArc: make(map[string]map[string][]*importEntry, len(sourceArcs)),
 	}
+	if len(sourceArcs) == 0 {
+		state.sourceArcs = []string{""}
+		state.entriesByArc[""] = make(map[string][]*importEntry)
+		return state, nil
+	}
+
+	state.sourceArcs = append([]string(nil), sourceArcs...)
 	for _, sourceArc := range sourceArcs {
 		entriesByText, err := s.loadArcFileEntries(sourceArc, sourceFile)
 		if err != nil {
