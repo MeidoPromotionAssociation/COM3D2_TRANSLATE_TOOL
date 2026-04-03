@@ -108,7 +108,12 @@
   "maintenanceSection": {
     "title": "维护",
     "run": "清理空白原文条目",
-    "help": "手动执行数据库清理，删除那些在不可见空白字符规范化后原文会变成空串的记录。为避免启动卡顿，此操作不再随应用启动自动执行。"
+    "fillTranslated": "填充空译文",
+    "help": "手动执行数据库清理，删除那些在不可见空白字符规范化后原文会变成空串的记录。为避免启动卡顿，此操作不再随应用启动自动执行。",
+    "fillTranslatedHelp": "手动把空 translated_text 条目按“同原文”从全库已有译文中回填。填充任务会先只筛出当前仍然缺失 translated_text 的原文，再分批查询这些原文的最佳现有候选。若存在多个候选译文，则优先选择状态更高、更新时间更新的那一条。",
+    "operation": {
+      "fill-translated": "填充空译文"
+    }
   },
   "translationSection": {
     "title": "批量翻译",
@@ -321,6 +326,21 @@
       "failed": "失败"
     }
   },
+  "maintenanceProgress": {
+    "totalSourceTexts": "原文数",
+    "processedSourceTexts": "已处理",
+    "filledEntries": "已填充",
+    "waitingSourceText": "等待下一个原文",
+    "phase": {
+      "pending": "等待中",
+      "starting": "启动中",
+      "running": "处理中",
+      "committing": "提交中",
+      "stopped": "已停止",
+      "completed": "已完成",
+      "failed": "失败"
+    }
+  },
   "dialogs": {
     "csvFiles": "CSV 文件",
     "jsonFiles": "JSON 文件",
@@ -353,6 +373,9 @@
     "maintenanceStarted": "已开始清理仅含不可见空白字符的原文条目。",
     "maintenanceCleanedInvisibleBlankEntries": "维护完成。已删除 {{count}} 条在不可见空白字符清理后原文为空的记录。",
     "maintenanceNoChanges": "维护完成。未发现需要清理的空白原文条目。",
+    "maintenanceFillStarted": "已开始使用数据库中的已有匹配项为缺失译文条目执行维护填充。",
+    "maintenanceFilledTranslatedEntries": "维护完成。已按同原文的最佳现有匹配为 {{count}} 条记录填充 translated_text。",
+    "maintenanceFillNoChanges": "维护完成。没有可用现有匹配可用于填充空 translated_text 条目。",
     "maintenanceFailed": "维护失败：{{error}}",
     "glossaryImported": "已从 {{path}} 导入术语表。术语数：{{count}}",
     "glossaryExported": "已将术语表导出到 {{path}}。术语数：{{count}}",

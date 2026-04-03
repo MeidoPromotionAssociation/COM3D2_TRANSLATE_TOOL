@@ -396,6 +396,7 @@ export namespace model {
 	}
 	export class MaintenanceResult {
 	    deletedInvisibleBlankEntries: number;
+	    filledTranslatedEntries: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new MaintenanceResult(source);
@@ -404,6 +405,7 @@ export namespace model {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.deletedInvisibleBlankEntries = source["deletedInvisibleBlankEntries"];
+	        this.filledTranslatedEntries = source["filledTranslatedEntries"];
 	    }
 	}
 	export class OpenAIProviderConfig {

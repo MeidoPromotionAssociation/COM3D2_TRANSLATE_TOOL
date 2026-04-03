@@ -284,6 +284,16 @@ type TranslatorTestResult struct {
 
 type MaintenanceResult struct {
 	DeletedInvisibleBlankEntries int `json:"deletedInvisibleBlankEntries"`
+	FilledTranslatedEntries      int `json:"filledTranslatedEntries"`
+}
+
+type MaintenanceProgress struct {
+	Operation            string `json:"operation"`
+	CurrentSourceText    string `json:"currentSourceText"`
+	TotalSourceTexts     int    `json:"totalSourceTexts"`
+	ProcessedSourceTexts int    `json:"processedSourceTexts"`
+	FilledEntries        int    `json:"filledEntries"`
+	Phase                string `json:"phase"`
 }
 
 type TranslateResult struct {

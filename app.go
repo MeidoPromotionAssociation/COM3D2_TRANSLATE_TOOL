@@ -176,6 +176,18 @@ func (a *App) RunMaintenance() (model.MaintenanceResult, error) {
 	return a.service.RunMaintenance()
 }
 
+func (a *App) RunMaintenanceFillTranslated() (model.MaintenanceResult, error) {
+	if err := a.ensureService(); err != nil {
+		return model.MaintenanceResult{}, err
+	}
+	ctx, taskID, err := a.beginTask()
+	if err != nil {
+		return model.MaintenanceResult{}, err
+	}
+	defer a.endTask(taskID)
+	return a.service.RunMaintenanceFillTranslated(ctx)
+}
+
 func (a *App) TestProxy(proxy model.ProxyConfig) (model.ProxyTestResult, error) {
 	ctx := a.ctx
 	if ctx == nil {

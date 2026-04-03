@@ -108,7 +108,12 @@
   "maintenanceSection": {
     "title": "Maintenance",
     "run": "Clean Blank Source Rows",
-    "help": "Runs database cleanup for rows whose original text becomes empty after invisible-whitespace normalization. This is manual only and no longer runs at startup."
+    "fillTranslated": "Fill Missing Translations",
+    "help": "Runs database cleanup for rows whose original text becomes empty after invisible-whitespace normalization. This is manual only and no longer runs at startup.",
+    "fillTranslatedHelp": "Manually fills empty translated_text fields by reusing the best existing translated_text for the same original text anywhere in the database. The fill job first scans only source texts that are still missing translated_text, then looks up the best existing candidate for those texts in batches. When multiple candidates exist, higher status wins first, then newer rows.",
+    "operation": {
+      "fill-translated": "Fill Missing Translations"
+    }
   },
   "translationSection": {
     "title": "Batch Translation",
@@ -321,6 +326,21 @@
       "failed": "Failed"
     }
   },
+  "maintenanceProgress": {
+    "totalSourceTexts": "Source Texts",
+    "processedSourceTexts": "Processed",
+    "filledEntries": "Filled",
+    "waitingSourceText": "Waiting for the next source text",
+    "phase": {
+      "pending": "Pending",
+      "starting": "Starting",
+      "running": "Running",
+      "committing": "Committing",
+      "stopped": "Stopped",
+      "completed": "Completed",
+      "failed": "Failed"
+    }
+  },
   "dialogs": {
     "csvFiles": "CSV Files",
     "jsonFiles": "JSON Files",
@@ -353,6 +373,9 @@
     "maintenanceStarted": "Started maintenance cleanup for invisible-blank source rows.",
     "maintenanceCleanedInvisibleBlankEntries": "Maintenance complete. Removed {{count}} source rows that were blank after invisible-whitespace cleanup.",
     "maintenanceNoChanges": "Maintenance complete. No invisible-blank source rows were found.",
+    "maintenanceFillStarted": "Started maintenance fill for empty translated_text rows using existing matches from the database.",
+    "maintenanceFilledTranslatedEntries": "Maintenance complete. Filled translated_text for {{count}} rows using the best existing match for the same original text.",
+    "maintenanceFillNoChanges": "Maintenance complete. No empty translated_text rows could be filled from existing matches.",
     "maintenanceFailed": "Maintenance failed: {{error}}",
     "glossaryImported": "Imported glossary from {{path}}. Terms: {{count}}",
     "glossaryExported": "Exported glossary to {{path}}. Terms: {{count}}",

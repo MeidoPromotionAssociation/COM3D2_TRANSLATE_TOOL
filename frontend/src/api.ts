@@ -21,6 +21,7 @@ import {
     RunExport,
     RunImport,
     RunMaintenance,
+    RunMaintenanceFillTranslated,
     RunSourceRecognition,
     RunTranslation,
     SaveSettings,
@@ -70,6 +71,7 @@ export const api = {
     reparseFailedArcs: () => ReparseFailedArcs() as Promise<ReparseFailedResult>,
     listEntries: (query: EntryQuery) => ListEntries(query as unknown as never) as Promise<EntryList>,
     runMaintenance: () => RunMaintenance() as Promise<MaintenanceResult>,
+    runMaintenanceFillTranslated: () => RunMaintenanceFillTranslated() as Promise<MaintenanceResult>,
     getFilterOptions: () => GetFilterOptions() as Promise<FilterOptions>,
     updateEntry: (input: UpdateEntryInput) => UpdateEntry(input as unknown as never) as Promise<void>,
     batchUpdateEntries: (input: {

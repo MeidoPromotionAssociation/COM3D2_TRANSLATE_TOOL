@@ -42,6 +42,16 @@ export type TranslatorTestResult = {
 
 export type MaintenanceResult = {
     deletedInvisibleBlankEntries: number;
+    filledTranslatedEntries: number;
+};
+
+export type MaintenanceProgress = {
+    operation: string;
+    currentSourceText: string;
+    totalSourceTexts: number;
+    processedSourceTexts: number;
+    filledEntries: number;
+    phase: string;
 };
 
 export type GoogleTranslateConfig = {

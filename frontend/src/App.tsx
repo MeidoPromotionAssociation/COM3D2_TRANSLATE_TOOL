@@ -16,6 +16,7 @@ import type {
     GoogleTranslateConfig,
     ImportProgress,
     ImportRequest,
+    MaintenanceProgress,
     OpenAIProviderConfig,
     Settings,
     SourceRecognitionRequest,
@@ -28,7 +29,7 @@ import type {
 
 type Page = "translate" | "tools";
 type OpenAISettingsKey = "openAIChat" | "openAIResponses";
-type CancellableTask = "" | "scan" | "reparse" | "import" | "export" | "translation" | "sourceRecognition";
+type CancellableTask = "" | "scan" | "reparse" | "import" | "export" | "translation" | "sourceRecognition" | "maintenance";
 type GlossaryRow = {
     id: string;
     source: string;
@@ -363,6 +364,25 @@ function formatExportPhase(phase: string, t: TranslateFn) {
     }
 }
 
+function formatMaintenancePhase(phase: string, t: TranslateFn) {
+    switch (phase) {
+        case "starting":
+            return t("maintenanceProgress.phase.starting");
+        case "running":
+            return t("maintenanceProgress.phase.running");
+        case "committing":
+            return t("maintenanceProgress.phase.committing");
+        case "completed":
+            return t("maintenanceProgress.phase.completed");
+        case "stopped":
+            return t("maintenanceProgress.phase.stopped");
+        case "failed":
+            return t("maintenanceProgress.phase.failed");
+        default:
+            return phase || t("maintenanceProgress.phase.pending");
+    }
+}
+
 function formatTranslatePhase(phase: string, t: TranslateFn) {
     switch (phase) {
         case "starting":
@@ -662,6 +682,7 @@ function App() {
     const [importProgress, setImportProgress] = useState<ImportProgress | null>(null);
     const [exportProgress, setExportProgress] = useState<ExportProgress | null>(null);
     const [translateProgress, setTranslateProgress] = useState<TranslateProgress | null>(null);
+    const [maintenanceProgress, setMaintenanceProgress] = useState<MaintenanceProgress | null>(null);
     const [busy, setBusy] = useState(false);
     const [activeTask, setActiveTask] = useState<CancellableTask>("");
     const [stopRequested, setStopRequested] = useState(false);
@@ -1014,6 +1035,16 @@ function App() {
             const next = data[0] as TranslateProgress | undefined;
             if (next) {
                 setTranslateProgress(next);
+            }
+        });
+        return unsubscribe;
+    }, []);
+
+    useEffect(() => {
+        const unsubscribe = EventsOn("maintenance:progress", (...data: unknown[]) => {
+            const next = data[0] as MaintenanceProgress | undefined;
+            if (next) {
+                setMaintenanceProgress(next);
             }
         });
         return unsubscribe;
@@ -1562,6 +1593,7 @@ function App() {
     async function runMaintenanceCleanup() {
         await runBusyTask(async () => {
             await flushAllAutosaves();
+            setMaintenanceProgress(null);
             replaceStatusMessage(t("messages.maintenanceStarted"));
             const result = await api.runMaintenance();
             await Promise.all([refreshEntries(), refreshFilters()]);
@@ -1571,6 +1603,22 @@ function App() {
                 return;
             }
             setMessage(t("messages.maintenanceNoChanges"));
+        });
+    }
+
+    async function runMaintenanceFillTranslated() {
+        setMaintenanceProgress(null);
+        await runCancellableTask("maintenance", async () => {
+            await flushAllAutosaves();
+            replaceStatusMessage(t("messages.maintenanceFillStarted"));
+            const result = await api.runMaintenanceFillTranslated();
+            await Promise.all([refreshEntries(), refreshFilters()]);
+            const filled = result.filledTranslatedEntries ?? 0;
+            if (filled > 0) {
+                setMessage(t("messages.maintenanceFilledTranslatedEntries", {count: filled}));
+                return;
+            }
+            setMessage(t("messages.maintenanceFillNoChanges"));
         });
     }
 
@@ -2800,11 +2848,56 @@ function App() {
                         <div className="panel compact-panel">
                             <div className="panel-title-row">
                                 <h2>{t("maintenanceSection.title")}</h2>
-                                <button className="accent" disabled={busy} onClick={runMaintenanceCleanup}>
-                                    {t("maintenanceSection.run")}
-                                </button>
+                                <div className="button-row">
+                                    <button className="accent" disabled={busy} onClick={runMaintenanceCleanup}>
+                                        {t("maintenanceSection.run")}
+                                    </button>
+                                    <button className="accent" disabled={busy} onClick={runMaintenanceFillTranslated}>
+                                        {t("maintenanceSection.fillTranslated")}
+                                    </button>
+                                    {activeTask === "maintenance" && (
+                                        <button
+                                            className="danger-button"
+                                            disabled={stopRequested}
+                                            onClick={stopCurrentTask}
+                                        >
+                                            {stopRequested ? t("common.stopping") : t("common.stop")}
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                             <p className="help">{t("maintenanceSection.help")}</p>
+                            <p className="help">{t("maintenanceSection.fillTranslatedHelp")}</p>
+                            {maintenanceProgress && (
+                                <div className="import-progress-card">
+                                    <div className="import-progress-header">
+                                        <span
+                                            className={`phase-pill ${maintenanceProgress.phase}`}>{formatMaintenancePhase(maintenanceProgress.phase, t)}</span>
+                                        <span className="import-progress-importer">
+                                            {t(`maintenanceSection.operation.${maintenanceProgress.operation}`, {
+                                                defaultValue: t("maintenanceSection.fillTranslated"),
+                                            })}
+                                        </span>
+                                    </div>
+                                    <div className="import-progress-file">
+                                        {displayPath(maintenanceProgress.currentSourceText, t("maintenanceProgress.waitingSourceText"))}
+                                    </div>
+                                    <div className="import-progress-grid translate-progress-grid">
+                                        <div>
+                                            <strong>{maintenanceProgress.totalSourceTexts}</strong>
+                                            <span>{t("maintenanceProgress.totalSourceTexts")}</span>
+                                        </div>
+                                        <div>
+                                            <strong>{maintenanceProgress.processedSourceTexts}</strong>
+                                            <span>{t("maintenanceProgress.processedSourceTexts")}</span>
+                                        </div>
+                                        <div>
+                                            <strong>{maintenanceProgress.filledEntries}</strong>
+                                            <span>{t("maintenanceProgress.filledEntries")}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </section>

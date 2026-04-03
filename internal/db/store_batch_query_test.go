@@ -257,3 +257,65 @@ INSERT INTO translation_entries(
 		t.Fatalf("expected a non-blank visible source text to remain, got %#v", entries.Items[0])
 	}
 }
+
+func TestFillMissingTranslatedTextsFromBestMatchesUsesBestRankedCandidate(t *testing.T) {
+	store, err := Open(filepath.Join(t.TempDir(), "fill-translated.sqlite"))
+	if err != nil {
+		t.Fatalf("open store: %v", err)
+	}
+	defer store.Close()
+
+	now := nowString()
+	if _, err := store.db.Exec(`
+INSERT INTO translation_entries(
+	type, voice_id, role, source_arc, source_file, source_text,
+	translated_text, polished_text, translator_status, created_at, updated_at
+) VALUES
+	('talk', '', '', 'fill.arc', 'scene01.ks', 'shared', '候选-A', '', 'translated', ?, '2026-04-01T00:00:00Z'),
+	('talk', '', '', 'fill.arc', 'scene02.ks', 'shared', '候选-B', '', 'reviewed', ?, '2026-04-02T00:00:00Z'),
+	('talk', '', '', 'fill.arc', 'scene03.ks', 'shared', '', '', 'new', ?, ?),
+	('talk', '', '', 'fill.arc', 'scene04.ks', 'shared', '', '已润色', 'reviewed', ?, ?),
+	('talk', '', '', 'fill.arc', 'scene05.ks', 'other', '其他译文', '', 'translated', ?, ?),
+	('talk', '', '', 'fill.arc', 'scene06.ks', 'other', '', '', 'new', ?, ?),
+	('talk', '', '', 'fill.arc', 'scene07.ks', ?, '', '', 'new', ?, ?)
+`, now, now, now, now, now, now, now, now, now, now, "\u180E\u200B", now, now); err != nil {
+		t.Fatalf("seed fill rows: %v", err)
+	}
+
+	filled, err := store.FillMissingTranslatedTextsFromBestMatches()
+	if err != nil {
+		t.Fatalf("fill missing translated texts: %v", err)
+	}
+	if filled != 3 {
+		t.Fatalf("expected 3 rows to be filled, got %d", filled)
+	}
+
+	entries, err := store.ListEntries(model.EntryQuery{Limit: 20})
+	if err != nil {
+		t.Fatalf("list entries after fill: %v", err)
+	}
+
+	byFile := make(map[string]model.Entry, len(entries.Items))
+	for _, entry := range entries.Items {
+		byFile[entry.SourceFile] = entry
+	}
+
+	if got := byFile["scene03.ks"].TranslatedText; got != "候选-B" {
+		t.Fatalf("expected scene03.ks to use best ranked translation, got %#v", byFile["scene03.ks"])
+	}
+	if got := byFile["scene03.ks"].TranslatorStatus; got != "translated" {
+		t.Fatalf("expected scene03.ks status to become translated, got %#v", byFile["scene03.ks"])
+	}
+	if got := byFile["scene04.ks"].TranslatedText; got != "候选-B" {
+		t.Fatalf("expected scene04.ks to be filled from best ranked translation, got %#v", byFile["scene04.ks"])
+	}
+	if got := byFile["scene04.ks"].TranslatorStatus; got != "reviewed" {
+		t.Fatalf("expected reviewed polished row to keep reviewed status, got %#v", byFile["scene04.ks"])
+	}
+	if got := byFile["scene06.ks"].TranslatedText; got != "其他译文" {
+		t.Fatalf("expected scene06.ks to be filled from matching source text, got %#v", byFile["scene06.ks"])
+	}
+	if got := byFile["scene07.ks"].TranslatedText; got != "" {
+		t.Fatalf("expected blank-like source row to remain untouched, got %#v", byFile["scene07.ks"])
+	}
+}

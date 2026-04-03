@@ -20,6 +20,7 @@ import (
 
 const timestampLayout = time.RFC3339
 const reuseLookupChunkSize = 200
+const maintenanceFillChunkSize = 500
 
 type Store struct {
 	db *sql.DB
@@ -415,6 +416,7 @@ func (s *Store) migrate() error {
 		`CREATE INDEX IF NOT EXISTS idx_entries_status ON translation_entries(translator_status)`,
 		`CREATE INDEX IF NOT EXISTS idx_entries_source_text ON translation_entries(source_text)`,
 		`CREATE INDEX IF NOT EXISTS idx_entries_source_text_translated ON translation_entries(source_text, translated_text)`,
+		`CREATE INDEX IF NOT EXISTS idx_entries_translated_source ON translation_entries(translated_text, source_text)`,
 		`CREATE INDEX IF NOT EXISTS idx_entries_export_order ON translation_entries(source_arc, source_file, id)`,
 	}
 
@@ -1269,6 +1271,220 @@ WHERE ` + cleanupSourceTextSQLExpression("source_text") + ` = ''`)
 		return 0, err
 	}
 	return int(rowsAffected), nil
+}
+
+func (s *Store) FillMissingTranslatedTextsFromBestMatches() (int, error) {
+	return s.FillMissingTranslatedTextsFromBestMatchesWithProgress(context.Background(), nil)
+}
+
+func (s *Store) CountPendingTranslatedFillSourceTexts(ctx context.Context) (int, error) {
+	var total int
+	err := s.db.QueryRowContext(ctx, `
+SELECT COUNT(*)
+FROM (
+	SELECT source_text
+	FROM translation_entries
+	WHERE translated_text = ''
+	  AND `+cleanupSourceTextSQLExpression("source_text")+` <> ''
+	GROUP BY source_text
+) pending_sources
+`).Scan(&total)
+	if err != nil {
+		return 0, err
+	}
+	return total, nil
+}
+
+func (s *Store) FillMissingTranslatedTextsFromBestMatchesWithProgress(
+	ctx context.Context,
+	progress func(processedSourceTexts, filledEntries int, currentSourceText string),
+) (int, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	lastSourceText := ""
+	processedSourceTexts := 0
+	filledEntries := 0
+
+	for {
+		if err := ctx.Err(); err != nil {
+			return filledEntries, err
+		}
+
+		rawSourceTexts, err := s.listPendingTranslatedFillSourceTextsAfter(ctx, lastSourceText, maintenanceFillChunkSize)
+		if err != nil {
+			return filledEntries, err
+		}
+		if len(rawSourceTexts) == 0 {
+			return filledEntries, nil
+		}
+
+		lastSourceText = rawSourceTexts[len(rawSourceTexts)-1]
+		sourceTexts := make([]string, 0, len(rawSourceTexts))
+		for _, sourceText := range rawSourceTexts {
+			if textutil.IsBlankSourceText(sourceText) {
+				continue
+			}
+			sourceTexts = append(sourceTexts, sourceText)
+		}
+		if len(sourceTexts) == 0 {
+			continue
+		}
+
+		matches, err := s.findBestTranslatedTextsForSourceTexts(ctx, sourceTexts)
+		if err != nil {
+			return filledEntries, err
+		}
+
+		chunkUpdated, err := s.applyTranslatedFillMatches(ctx, sourceTexts, matches)
+		if err != nil {
+			return filledEntries, err
+		}
+
+		processedSourceTexts += len(sourceTexts)
+		filledEntries += chunkUpdated
+		if progress != nil {
+			progress(processedSourceTexts, filledEntries, sourceTexts[len(sourceTexts)-1])
+		}
+	}
+}
+
+func (s *Store) listPendingTranslatedFillSourceTextsAfter(ctx context.Context, lastSourceText string, limit int) ([]string, error) {
+	if limit <= 0 {
+		limit = maintenanceFillChunkSize
+	}
+
+	rows, err := s.db.QueryContext(ctx, `
+SELECT source_text
+FROM (
+	SELECT DISTINCT source_text
+	FROM translation_entries
+	WHERE translated_text = ''
+	  AND source_text > ?
+	ORDER BY source_text ASC
+	LIMIT ?
+) pending_sources
+ORDER BY source_text ASC
+`, lastSourceText, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	values := make([]string, 0, limit)
+	for rows.Next() {
+		var sourceText string
+		if err := rows.Scan(&sourceText); err != nil {
+			return nil, err
+		}
+		values = append(values, sourceText)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return values, nil
+}
+
+func (s *Store) findBestTranslatedTextsForSourceTexts(ctx context.Context, sourceTexts []string) (map[string]string, error) {
+	if len(sourceTexts) == 0 {
+		return map[string]string{}, nil
+	}
+
+	rows, err := s.db.QueryContext(ctx, `
+SELECT source_text, translated_text
+FROM (
+	SELECT source_text,
+	       translated_text,
+	       ROW_NUMBER() OVER (
+	         PARTITION BY source_text
+	         ORDER BY
+	           CASE translator_status
+	             WHEN 'reviewed' THEN 4
+	             WHEN 'polished' THEN 3
+	             WHEN 'translated' THEN 2
+	             ELSE 1
+	           END DESC,
+	           updated_at DESC,
+	           id DESC
+	       ) AS row_rank
+	FROM translation_entries
+	WHERE translated_text <> ''
+	  AND source_text IN (`+sqlPlaceholders(len(sourceTexts))+`)
+) ranked_candidates
+WHERE row_rank = 1
+ORDER BY source_text ASC
+`, stringsToAny(sourceTexts)...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	matches := make(map[string]string, len(sourceTexts))
+	for rows.Next() {
+		var sourceText string
+		var translatedText string
+		if err := rows.Scan(&sourceText, &translatedText); err != nil {
+			return nil, err
+		}
+		matches[sourceText] = translatedText
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return matches, nil
+}
+
+func (s *Store) applyTranslatedFillMatches(ctx context.Context, sourceTexts []string, matches map[string]string) (int, error) {
+	if len(sourceTexts) == 0 || len(matches) == 0 {
+		return 0, nil
+	}
+
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback()
+
+	stmt, err := tx.PrepareContext(ctx, `
+UPDATE translation_entries
+SET translated_text = ?,
+	translator_status = CASE
+	    WHEN polished_text <> '' AND translator_status = 'reviewed' THEN 'reviewed'
+	    WHEN polished_text <> '' THEN 'polished'
+	    ELSE 'translated'
+	END,
+	updated_at = ?
+WHERE translated_text = ''
+  AND source_text = ?
+`)
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	now := nowString()
+	updated := 0
+	for _, sourceText := range sourceTexts {
+		translatedText, ok := matches[sourceText]
+		if !ok || strings.TrimSpace(translatedText) == "" {
+			continue
+		}
+		res, err := stmt.ExecContext(ctx, translatedText, now, sourceText)
+		if err != nil {
+			return updated, err
+		}
+		rowsAffected, err := res.RowsAffected()
+		if err != nil {
+			return updated, err
+		}
+		updated += int(rowsAffected)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return updated, err
+	}
+	return updated, nil
 }
 
 func (s *Store) StreamDistinctTabTextRows(ctx context.Context, req model.ExportRequest, yield func(sourceText, finalText string) error) error {

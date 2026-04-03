@@ -138,6 +138,41 @@ func (s *Service) RunMaintenance() (model.MaintenanceResult, error) {
 	}, nil
 }
 
+func (s *Service) RunMaintenanceFillTranslated(ctx context.Context) (model.MaintenanceResult, error) {
+	totalSourceTexts, err := s.store.CountPendingTranslatedFillSourceTexts(ctx)
+	if err != nil {
+		return model.MaintenanceResult{}, err
+	}
+
+	runtime := newMaintenanceRuntime(ctx, "fill-translated", totalSourceTexts)
+	if totalSourceTexts == 0 {
+		runtime.Complete(0)
+		return model.MaintenanceResult{}, nil
+	}
+
+	filled, err := s.store.FillMissingTranslatedTextsFromBestMatchesWithProgress(ctx, func(processedSourceTexts, filledEntries int, currentSourceText string) {
+		runtime.MarkRunning(currentSourceText, processedSourceTexts, filledEntries)
+	})
+	if err != nil {
+		if ctx != nil && ctx.Err() != nil {
+			runtime.Stopped()
+			return model.MaintenanceResult{
+				FilledTranslatedEntries: filled,
+			}, nil
+		}
+		runtime.MarkFailed()
+		return model.MaintenanceResult{
+			FilledTranslatedEntries: filled,
+		}, err
+	}
+
+	runtime.MarkCommitting(filled)
+	runtime.Complete(filled)
+	return model.MaintenanceResult{
+		FilledTranslatedEntries: filled,
+	}, nil
+}
+
 func (s *Service) ScanArcs(ctx context.Context) (model.ScanResult, error) {
 	settings, err := s.GetSettings()
 	if err != nil {
