@@ -704,6 +704,7 @@ function App() {
     const autosaveTimersRef = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
     const autosavePendingRef = useRef<Map<number, UpdateEntryInput>>(new Map());
     const autosaveInFlightRef = useRef<Map<number, Promise<void>>>(new Map());
+    const entriesRef = useRef<Entry[]>([]);
     const settingsRef = useRef(settings);
     const settingsAutosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const settingsAutosaveInFlightRef = useRef<Promise<void> | null>(null);
@@ -819,13 +820,15 @@ function App() {
             try {
                 await api.updateEntry(input);
             } catch (error) {
-                replaceStatusMessage(t("messages.autoSaveFailed", {id, error: getErrorMessage(error)}));
+                const message = t("messages.autoSaveFailed", {id, error: getErrorMessage(error)});
+                replaceStatusMessage(message);
+                throw new Error(message);
             } finally {
                 autosaveInFlightRef.current.delete(id);
                 if (autosavePendingRef.current.has(id)) {
                     clearAutosaveTimer(id);
                     autosaveTimersRef.current.set(id, setTimeout(() => {
-                        void flushEntryAutosave(id);
+                        void flushEntryAutosave(id).catch(() => undefined);
                     }, entryAutosaveDelayMs));
                 }
             }
@@ -839,7 +842,7 @@ function App() {
         autosavePendingRef.current.set(entry.id, toUpdateEntryInput(entry));
         clearAutosaveTimer(entry.id);
         autosaveTimersRef.current.set(entry.id, setTimeout(() => {
-            void flushEntryAutosave(entry.id);
+            void flushEntryAutosave(entry.id).catch(() => undefined);
         }, entryAutosaveDelayMs));
     }
 
@@ -848,21 +851,38 @@ function App() {
             ...autosavePendingRef.current.keys(),
             ...autosaveInFlightRef.current.keys(),
         ]);
+        const errors: string[] = [];
 
         for (const id of autosaveTimersRef.current.keys()) {
             clearAutosaveTimer(id);
         }
 
         for (const id of ids) {
-            await flushEntryAutosave(id);
+            try {
+                await flushEntryAutosave(id);
+            } catch (error) {
+                errors.push(getErrorMessage(error));
+            }
             const inFlight = autosaveInFlightRef.current.get(id);
             if (inFlight) {
-                await inFlight;
+                try {
+                    await inFlight;
+                } catch (error) {
+                    errors.push(getErrorMessage(error));
+                }
             }
             if (autosavePendingRef.current.has(id)) {
                 clearAutosaveTimer(id);
-                await flushEntryAutosave(id);
+                try {
+                    await flushEntryAutosave(id);
+                } catch (error) {
+                    errors.push(getErrorMessage(error));
+                }
             }
+        }
+
+        if (errors.length > 0) {
+            throw new Error(errors.join("\n"));
         }
     }
 
@@ -1021,6 +1041,10 @@ function App() {
     }, [settings]);
 
     useEffect(() => {
+        entriesRef.current = entries;
+    }, [entries]);
+
+    useEffect(() => {
         const unsubscribe = EventsOn("import:progress", (...data: unknown[]) => {
             const next = data[0] as ImportProgress | undefined;
             if (next) {
@@ -1135,16 +1159,16 @@ function App() {
 
     function updateEntryField(id: number, key: "translatedText" | "polishedText" | "translatorStatus", value: string) {
         let nextEntry: Entry | null = null;
-        setEntries((current) =>
-            current.map((entry) => {
-                if (entry.id !== id) {
-                    return entry;
-                }
-                nextEntry = {...entry, [key]: value};
-                return nextEntry;
-            }),
-        );
+        const nextEntries = entriesRef.current.map((entry) => {
+            if (entry.id !== id) {
+                return entry;
+            }
+            nextEntry = {...entry, [key]: value};
+            return nextEntry;
+        });
         if (nextEntry) {
+            entriesRef.current = nextEntries;
+            setEntries(nextEntries);
             queueEntryAutosave(nextEntry);
         }
     }
@@ -1964,12 +1988,18 @@ function App() {
                           <textarea
                               value={entry.translatedText}
                               onChange={(event) => updateEntryField(entry.id, "translatedText", event.target.value)}
+                              onBlur={() => {
+                                  void flushEntryAutosave(entry.id).catch(() => undefined);
+                              }}
                           />
                                             </td>
                                             <td>
                           <textarea
                               value={entry.polishedText}
                               onChange={(event) => updateEntryField(entry.id, "polishedText", event.target.value)}
+                              onBlur={() => {
+                                  void flushEntryAutosave(entry.id).catch(() => undefined);
+                              }}
                           />
                                             </td>
                                             <td>
