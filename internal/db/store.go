@@ -1342,6 +1342,66 @@ ORDER BY export_source ASC`
 	return nil
 }
 
+func (s *Store) StreamDistinctVoiceSubtitleRows(ctx context.Context, req model.ExportRequest, yield func(voiceID, finalText string) error) error {
+	whereSQL, args := buildWhere(exportEntryQuery(req))
+
+	exportQuery := `
+SELECT voice_id, final_text
+FROM (
+	SELECT voice_id, final_text, row_rank
+	FROM (
+		SELECT voice_id,
+		       CASE
+		         WHEN polished_text <> '' THEN polished_text
+		         ELSE translated_text
+		       END AS final_text,
+		       ROW_NUMBER() OVER (
+		         PARTITION BY voice_id
+		         ORDER BY
+		           CASE
+		             WHEN polished_text <> '' THEN 3
+		             WHEN translated_text <> '' THEN 2
+		             ELSE 1
+		           END DESC,
+		           CASE translator_status
+		             WHEN 'reviewed' THEN 4
+		             WHEN 'polished' THEN 3
+		             WHEN 'translated' THEN 2
+		             ELSE 1
+		           END DESC,
+		           updated_at DESC,
+		           id DESC
+		       ) AS row_rank
+		FROM translation_entries` + whereSQL + `
+	) prepared_rows
+	WHERE voice_id <> '' AND final_text <> ''
+) deduped_rows
+WHERE row_rank = 1
+ORDER BY voice_id ASC`
+
+	rows, err := s.db.QueryContext(ctx, exportQuery, args...)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var voiceID string
+		var finalText string
+		if err := rows.Scan(&voiceID, &finalText); err != nil {
+			return err
+		}
+		if err := yield(voiceID, finalText); err != nil {
+			return err
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *Store) StreamExportRows(ctx context.Context, req model.ExportRequest, yield func(sourceText, finalText string, skipped bool) error) error {
 	whereSQL, args := buildWhere(exportEntryQuery(req))
 

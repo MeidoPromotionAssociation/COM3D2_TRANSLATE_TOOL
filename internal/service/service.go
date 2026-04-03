@@ -57,6 +57,7 @@ func New(baseDir string) (*Service, error) {
 	ksExtractCSVImporter := importer.NewKSExtractCSVImporter(store)
 	translatedCSVImporter := importer.NewTranslatedCSVImporter(store)
 	tabExporter := exporter.NewTabTextExporter(store)
+	voiceSubtitleExporter := exporter.NewVoiceSubtitleTextExporter(store)
 	entryJSONLExporter := exporter.NewEntryJSONLExporter(store)
 
 	svc.importers[folderImporter.Name()] = folderImporter
@@ -65,6 +66,7 @@ func New(baseDir string) (*Service, error) {
 	svc.importers[ksExtractCSVImporter.Name()] = ksExtractCSVImporter
 	svc.importers[translatedCSVImporter.Name()] = translatedCSVImporter
 	svc.exporters[tabExporter.Name()] = tabExporter
+	svc.exporters[voiceSubtitleExporter.Name()] = voiceSubtitleExporter
 	svc.exporters[entryJSONLExporter.Name()] = entryJSONLExporter
 
 	settings, err := svc.GetSettings()

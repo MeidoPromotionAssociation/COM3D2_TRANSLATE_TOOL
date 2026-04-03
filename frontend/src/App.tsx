@@ -116,7 +116,7 @@ const defaultQuery: EntryQuery = {
 
 const defaultStatuses = ["new", "translated", "polished", "reviewed"];
 const defaultImporters = ["arc-ks-folder-text", "arc-source-text-file", "entry-jsonl", "ks-extract-csv", "translated-csv"];
-const defaultExporters = ["tab-text", "entry-jsonl"];
+const defaultExporters = ["tab-text", "voice-subtitle-text", "entry-jsonl"];
 const defaultTranslators = ["manual", "google-translate", "baidu-translate", "openai-chat", "openai-responses"];
 
 function getErrorMessage(error: unknown) {
@@ -159,6 +159,9 @@ function joinPath(dir: string, name: string) {
 function defaultExportFilename(exporter: string) {
     if (exporter === "entry-jsonl") {
         return "translations.jsonl";
+    }
+    if (exporter === "voice-subtitle-text") {
+        return "voice-subtitles.txt";
     }
     return "translations.txt";
 }

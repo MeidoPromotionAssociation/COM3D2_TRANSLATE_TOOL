@@ -695,6 +695,34 @@ If multiple candidate rows share the same source text, the exporter picks the be
 
 Use this format only when you want a simple text module and can accept identity loss.
 
+#### `voice-subtitle-text`
+
+Format:
+
+```text
+voice_id<TAB>final_text
+```
+
+This exporter is meant for JAT-style custom subtitle loading where the lookup key is the voice file identifier instead of the original script text.
+
+`final_text` means:
+
+- `polished_text` if present
+- otherwise `translated_text`
+
+Export rules:
+
+- only rows with non-empty `voice_id` and non-empty `final_text` participate
+- rows are deduplicated by `voice_id`
+- if multiple rows share the same `voice_id`, the exporter prefers:
+  1. rows with `polished_text`
+  2. then higher review state
+  3. then newer `updated_at`
+  4. then newer `id`
+- output escaping rules are the same as `tab-text`
+
+This is useful when you want to drive subtitles directly from voice playback keys, including `playvoice` and `playvoice_notext` workflows.
+
 #### `entry-jsonl`
 
 Line-delimited JSON full snapshot.
@@ -1485,6 +1513,34 @@ source<TAB>final_text
 4. `id` 更大的行
 
 如果你只是想导出简化文本模块，这个格式适合；如果你需要完整保留来源信息，请不要用它。
+
+#### `voice-subtitle-text`
+
+格式为：
+
+```text
+voice_id<TAB>final_text
+```
+
+这个导出器面向按语音键加载字幕的 JAT 风格自定义字幕模块，左侧查找键不是脚本原文，而是 `voice_id`。
+
+其中 `final_text` 的选择逻辑是：
+
+- 有 `polished_text` 就用 `polished_text`
+- 否则用 `translated_text`
+
+导出规则如下：
+
+- 只有 `voice_id` 非空且 `final_text` 非空的条目会参与导出
+- 程序会按 `voice_id` 去重
+- 如果同一个 `voice_id` 对应多条记录，会按以下优先级挑选最佳候选：
+  1. 有 `polished_text` 的行
+  2. 状态更高的行
+  3. `updated_at` 更新更晚的行
+  4. `id` 更大的行
+- 转义规则与 `tab-text` 完全相同
+
+这个格式适合直接按语音播放键驱动字幕的场景，也适合 `playvoice` / `playvoice_notext` 相关工作流。
 
 #### `entry-jsonl`
 

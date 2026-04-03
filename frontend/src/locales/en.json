@@ -156,6 +156,10 @@
       "label": "JAT General Text Translation Module Format",
       "help": "Exports UTF-8 text in a format that JAT can load directly. The exporter escapes newlines, tabs, backslashes, and similar special characters using JAT-compatible rules; if a source line starts with ; or $, that row is skipped instead of being exported. Only one row is kept for each original text because the format cannot preserve source identity. When duplicates conflict, the exporter prefers polished/reviewed rows and then newer rows."
     },
+    "voice-subtitle-text": {
+      "label": "JAT Voice Subtitle Format",
+      "help": "Exports UTF-8 text in the same tab-text format, but uses voice_id as the source key and final text as the target text. Final text prefers polished_text over translated_text. Any row with a non-empty voice_id and final text can participate. If multiple rows share the same voice_id, the exporter prefers polished rows first, then status and recency."
+    },
     "entry-jsonl": {
       "label": "Entry Snapshot JSONL",
       "help": "Exports a line-delimited JSON snapshot of full entry records so the data can be imported back later without losing fields such as type, voiceId, role, source arc/file, translated text, polished text, status, and timestamps."
