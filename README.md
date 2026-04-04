@@ -56,6 +56,13 @@ In practice, it replaces the manual workflow of:
 - running `ks_extract` and `ks_split` manually
 - maintaining loose text files with limited identity metadata
 
+
+<img width="1280" height="720" alt="image" src="https://github.com/user-attachments/assets/055349f7-f3cf-4f3a-95f3-5dfab02bb672" /> <img width="1280" height="720" alt="image" src="https://github.com/user-attachments/assets/1bd3f948-25e7-4260-92d0-809213aa83af" />
+
+<img width="1280" height="720" alt="image" src="https://github.com/user-attachments/assets/1b8e8911-a235-4143-9f47-a93fa6b05b0d" /> <img width="1280" height="720" alt="image" src="https://github.com/user-attachments/assets/c15c86ee-629a-42d3-af90-58d74fcfc24d" />
+
+<img width="1280" height="720" alt="image" src="https://github.com/user-attachments/assets/6fc56561-202d-4ed1-b3ab-96e4612676be" />
+
 ### Core Features
 
 - **Integrated ARC workflow**
@@ -884,6 +891,14 @@ COM3D2 的大量剧情文本存放在 `.arc` 压缩包与 `.ks` KAG 脚本中。
 - 手动运行 `ks_extract`
 - 手动运行 `ks_split`
 - 维护缺少来源字段的散装文本文件
+
+
+<img width="1280" height="720" alt="image" src="https://github.com/user-attachments/assets/055349f7-f3cf-4f3a-95f3-5dfab02bb672" /> <img width="1280" height="720" alt="image" src="https://github.com/user-attachments/assets/1bd3f948-25e7-4260-92d0-809213aa83af" />
+
+<img width="1280" height="720" alt="image" src="https://github.com/user-attachments/assets/1b8e8911-a235-4143-9f47-a93fa6b05b0d" /> <img width="1280" height="720" alt="image" src="https://github.com/user-attachments/assets/c15c86ee-629a-42d3-af90-58d74fcfc24d" />
+
+<img width="1280" height="720" alt="image" src="https://github.com/user-attachments/assets/6fc56561-202d-4ed1-b3ab-96e4612676be" />
+
 
 ### 核心特性
 
