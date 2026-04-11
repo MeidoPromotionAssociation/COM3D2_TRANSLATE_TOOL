@@ -2,6 +2,9 @@
 
 [English](#english) | [简体中文](#简体中文)
 
+[![Github All Releases](https://img.shields.io/github/downloads/MeidoPromotionAssociation/COM3D2_TRANSLATE_TOOL/total.svg)]() [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/MeidoPromotionAssociation/COM3D2_TRANSLATE_TOOL)
+
+
 Desktop translation workflow manager for **CUSTOM ORDER MAID 3D2 / COM3D2**.
 
 This project is a **Wails + Go + React** desktop application focused on managing a large COM3D2 translation database
