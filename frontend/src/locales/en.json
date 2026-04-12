@@ -151,6 +151,10 @@
       "label": "ks_extract CSV",
       "help": "Imports a ks_extract CSV using source arc, source file, and source text. Type, voice_id, and role are used only when those cells are present."
     },
+    "translation-extract-json": {
+      "label": "TranslationExtract JSON",
+      "help": "Imports a TranslationExtract.dll JSON file keyed by original text. The Official field is used as the translation, and every listed scriptFiles entry is matched and updated."
+    },
     "translated-csv": {
       "label": "Translated CSV",
       "help": "Imports a folder containing *_translated.csv files. Each file is mapped back to its .ks name, then existing arcs are inferred from the database."
@@ -354,6 +358,7 @@
     "selectGlossaryExportFile": "Save glossary file",
     "selectEntryJSONL": "Select entry snapshot JSONL",
     "selectKsExtractCsv": "Select ks_extract CSV",
+    "selectTranslationExtractJSON": "Select TranslationExtract JSON",
     "selectTranslatedCsv": "Select translated CSV",
     "selectArcSourceTextFile": "Select arc source text file",
     "selectImportSourceDirectory": "Select import source directory",

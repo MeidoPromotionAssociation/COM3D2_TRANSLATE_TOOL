@@ -55,6 +55,7 @@ func New(baseDir string) (*Service, error) {
 	arcSourceTextImporter := importer.NewArcSourceTextFileImporter(store)
 	entryJSONLImporter := importer.NewEntryJSONLImporter(store)
 	ksExtractCSVImporter := importer.NewKSExtractCSVImporter(store)
+	translationExtractJSONImporter := importer.NewTranslationExtractJSONImporter(store)
 	translatedCSVImporter := importer.NewTranslatedCSVImporter(store)
 	tabExporter := exporter.NewTabTextExporter(store)
 	voiceSubtitleExporter := exporter.NewVoiceSubtitleTextExporter(store)
@@ -64,6 +65,7 @@ func New(baseDir string) (*Service, error) {
 	svc.importers[arcSourceTextImporter.Name()] = arcSourceTextImporter
 	svc.importers[entryJSONLImporter.Name()] = entryJSONLImporter
 	svc.importers[ksExtractCSVImporter.Name()] = ksExtractCSVImporter
+	svc.importers[translationExtractJSONImporter.Name()] = translationExtractJSONImporter
 	svc.importers[translatedCSVImporter.Name()] = translatedCSVImporter
 	svc.exporters[tabExporter.Name()] = tabExporter
 	svc.exporters[voiceSubtitleExporter.Name()] = voiceSubtitleExporter

@@ -118,7 +118,7 @@ const defaultQuery: EntryQuery = {
 };
 
 const defaultStatuses = ["new", "translated", "polished", "reviewed"];
-const defaultImporters = ["arc-ks-folder-text", "arc-source-text-file", "entry-jsonl", "ks-extract-csv", "translated-csv"];
+const defaultImporters = ["arc-ks-folder-text", "arc-source-text-file", "entry-jsonl", "ks-extract-csv", "translation-extract-json", "translated-csv"];
 const defaultExporters = ["tab-text", "voice-subtitle-text", "entry-jsonl"];
 const defaultTranslators = ["manual", "google-translate", "baidu-translate", "openai-chat", "openai-responses"];
 
@@ -208,7 +208,7 @@ function formatTranslateLog(log: TranslateLog) {
 }
 
 function importerUsesFileSource(name: string) {
-    return name === "ks-extract-csv" || name === "entry-jsonl";
+    return name === "ks-extract-csv" || name === "entry-jsonl" || name === "translation-extract-json";
 }
 
 function exporterSupportsSkipEmptyFinal(name: string) {
@@ -282,6 +282,13 @@ function getImportSourceDialog(name: string, t: TranslateFn) {
             title: t("dialogs.selectEntryJSONL"),
             displayName: t("dialogs.jsonlFiles"),
             pattern: "*.jsonl",
+        };
+    }
+    if (name === "translation-extract-json") {
+        return {
+            title: t("dialogs.selectTranslationExtractJSON"),
+            displayName: t("dialogs.jsonFiles"),
+            pattern: "*.json",
         };
     }
     if (name === "translated-csv") {

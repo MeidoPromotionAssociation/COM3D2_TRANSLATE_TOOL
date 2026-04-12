@@ -51,6 +51,7 @@ type TranslatedCSVApplyResult struct {
 	Inserted      int
 	Updated       int
 	Skipped       int
+	Unmatched     int
 	AmbiguousArcs []string
 }
 
@@ -2502,6 +2503,58 @@ func (s *TranslatedCSVFileState) Apply(sourceText, translatedText string, allowO
 		}
 	}
 
+	return result, nil
+}
+
+func (s *TranslatedCSVFileState) ApplyMatchOnly(sourceText, translatedText string, allowOverwrite bool) (TranslatedCSVApplyResult, error) {
+	if s == nil || s.session == nil {
+		return TranslatedCSVApplyResult{}, fmt.Errorf("translated csv file state is not initialized")
+	}
+
+	sourceText = normalizeEntrySourceText(sourceText)
+	if sourceText == "" {
+		return TranslatedCSVApplyResult{Skipped: 1}, nil
+	}
+
+	result := TranslatedCSVApplyResult{
+		AmbiguousArcs: make([]string, 0),
+	}
+	matchedAny := false
+	for _, sourceArc := range s.sourceArcs {
+		entriesByText := s.entriesByArc[sourceArc]
+		candidates := entriesByText[sourceText]
+		matchCount := len(candidates)
+		if matchCount == 0 {
+			continue
+		}
+
+		matchedAny = true
+		if strings.TrimSpace(translatedText) == "" {
+			result.Skipped++
+			continue
+		}
+		if matchCount > 1 {
+			result.Skipped++
+			result.AmbiguousArcs = append(result.AmbiguousArcs, sourceArc)
+			continue
+		}
+
+		updated, skipped, err := s.session.updateImportedRow(candidates[0], translatedText, allowOverwrite)
+		if err != nil {
+			return result, err
+		}
+		if skipped {
+			result.Skipped++
+			continue
+		}
+		if updated {
+			result.Updated++
+		}
+	}
+
+	if !matchedAny {
+		result.Unmatched = 1
+	}
 	return result, nil
 }
 

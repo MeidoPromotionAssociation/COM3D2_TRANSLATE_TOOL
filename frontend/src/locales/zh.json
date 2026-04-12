@@ -151,6 +151,10 @@
       "label": "ks_extract CSV",
       "help": "导入 ks_extract 导出的 CSV，按来源 arc、来源文件和原文匹配；当类型、voice_id、角色存在时也会参与匹配。"
     },
+    "translation-extract-json": {
+      "label": "TranslationExtract JSON",
+      "help": "导入 TranslationExtract.dll 导出的 JSON。顶层键是原文，Official 字段作为译文，scriptFiles 中列出的每个 .ks 都会分别匹配并更新。"
+    },
     "translated-csv": {
       "label": "已翻译 CSV",
       "help": "导入包含 *_translated.csv 的目录。程序会回推对应 .ks 文件名，并从数据库中推断已有 arc。"
@@ -354,6 +358,7 @@
     "selectGlossaryExportFile": "保存术语表文件",
     "selectEntryJSONL": "选择条目快照 JSONL",
     "selectKsExtractCsv": "选择 ks_extract CSV",
+    "selectTranslationExtractJSON": "选择 TranslationExtract JSON",
     "selectTranslatedCsv": "选择 translated CSV",
     "selectArcSourceTextFile": "选择 arc 源文本文件",
     "selectImportSourceDirectory": "选择导入来源目录",
